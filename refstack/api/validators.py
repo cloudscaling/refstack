@@ -168,3 +168,32 @@ class PubkeyValidator(BaseValidator):
         data_hash.update('signature'.encode('utf-8'))
         if not signer.verify(data_hash, sign):
             raise api_exc.ValidationError('Signature verification failed')
+
+
+class CloudValidator(BaseValidator):
+
+    """Validator for adding new cloud."""
+
+    schema = {
+        'type': 'object',
+        'properties': {
+            'name': {'type': 'string'},
+            'description': {'type': 'string'},
+            'config': {'type': 'string'}
+        },
+        'required': ['name', 'config'],
+        'additionalProperties': False
+    }
+
+    def validate(self, request):
+        """Validate uploaded test results."""
+        super(CloudValidator, self).validate(request)
+        body = json.loads(request.body)
+
+        name = body['name'].strip()
+        if not name:
+            raise api_exc.ValidationError('Name should not be empty.')
+
+        config = body['config'].strip()
+        if not config:
+            raise api_exc.ValidationError('Config should not be empty.')

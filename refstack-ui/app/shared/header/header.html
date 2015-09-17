@@ -21,6 +21,7 @@ RefStack
             <li ng-class="{ active: isActive('/community_results')}"><a ui-sref="communityResults">Community Results</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            <li ng-class="{ active: isActive('/user_clouds')}" ng-if="auth.isAuthenticated"><a ui-sref="userClouds">My Clouds</a></li>
             <li ng-class="{ active: isActive('/user_results')}" ng-if="auth.isAuthenticated"><a ui-sref="userResults">My Results</a></li>
             <li ng-class="{ active: isActive('/profile')}" ng-if="auth.isAuthenticated"><a ui-sref="profile">Profile</a></li>
             <li ng-if="auth.isAuthenticated"><a href="" ng-click="auth.doSignOut()">Sign Out</a></li>

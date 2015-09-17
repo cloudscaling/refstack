@@ -1,6 +1,6 @@
 /** Main app module where application dependencies are listed. */
 var refstackApp = angular.module('refstackApp', [
-    'ui.router', 'ui.bootstrap', 'cgBusy', 'ngResource', 'angular-confirm']);
+    'ui.router', 'ui.bootstrap', 'cgBusy', 'ngResource', 'angular-confirm', 'oi.file']);
 
 /**
  * Handle application routing. Specific templates and controllers will be
@@ -35,6 +35,11 @@ refstackApp.config([
                 url: '/user_results',
                 templateUrl: '/components/results/results.html',
                 controller: 'resultsController'
+            }).
+            state('userClouds', {
+                url: '/user_clouds',
+                templateUrl: '/components/clouds/clouds.html',
+                controller: 'cloudsController'
             }).
             state('resultsDetail', {
                 url: '/results/:testID',

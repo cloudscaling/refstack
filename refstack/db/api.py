@@ -152,3 +152,23 @@ def delete_pubkey(pubkey_id):
 def get_user_pubkeys(user_openid):
     """Get public pubkeys for specified user."""
     return IMPL.get_user_pubkeys(user_openid)
+
+
+def store_cloud(cloud_info):
+    """Store cloud in to DB."""
+    return IMPL.store_cloud(cloud_info)
+
+
+def delete_cloud(cloud_id):
+    """Delete cloud from DB."""
+    return IMPL.delete_cloud(cloud_id)
+
+
+def get_cloud(cloud_id):
+    """Get cloud by id."""
+    return IMPL.get_cloud(cloud_id)
+
+
+def get_user_clouds(user_openid):
+    """Get clouds for specified user."""
+    return IMPL.get_user_clouds(user_openid)

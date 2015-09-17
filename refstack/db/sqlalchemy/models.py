@@ -165,3 +165,23 @@ class PubKey(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return 'id', 'openid', 'format', 'pubkey', 'comment'
+
+
+class Cloud(BASE, RefStackBase):  # pragma: no cover
+
+    """User clouds."""
+
+    __tablename__ = 'clouds'
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    openid = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
+                       nullable=False, unique=True, index=True)
+    name = sa.Column(sa.String(80), nullable=False)
+    description = sa.Column(sa.Text())
+    config = sa.Column(sa.Text(), nullable=False)
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'id', 'openid', 'name', 'description'

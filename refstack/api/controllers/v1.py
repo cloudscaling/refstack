@@ -17,6 +17,7 @@
 
 from refstack.api.controllers import auth
 from refstack.api.controllers import capabilities
+from refstack.api.controllers import clouds
 from refstack.api.controllers import results
 from refstack.api.controllers import user
 
@@ -26,6 +27,7 @@ class V1Controller(object):
     """Version 1 API controller root."""
 
     results = results.ResultsController()
+    clouds = clouds.CloudsController()
     capabilities = capabilities.CapabilitiesController()
     auth = auth.AuthController()
     profile = user.ProfileController()

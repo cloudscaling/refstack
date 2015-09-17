@@ -320,3 +320,44 @@ def get_user_pubkeys(user_openid):
     session = get_session()
     pubkeys = session.query(models.PubKey).filter_by(openid=user_openid).all()
     return _to_dict(pubkeys)
+
+
+def store_cloud(cloud_info):
+    """Store key in to DB."""
+    cloud = models.Cloud()
+    cloud.openid = cloud_info['openid']
+    cloud.name = cloud_info['name']
+    cloud.description = cloud_info.get('description')
+    cloud.config = cloud_info['config']
+    session = get_session()
+    with session.begin():
+        clouds_collision = (session.
+                            query(models.Cloud).
+                            filter_by(name=cloud.name).all())
+        if not clouds_collision:
+            cloud.save(session)
+        else:
+            raise Duplication('Public key already exists.')
+    return cloud.id
+
+
+def delete_cloud(id):
+    """Delete key from DB."""
+    session = get_session()
+    with session.begin():
+        key = session.query(models.Cloud).filter_by(id=id).first()
+        session.delete(key)
+
+
+def get_cloud(cloud_id):
+    """Get cloud by id."""
+    session = get_session()
+    cloud = session.query(models.Cloud).filter_by(id=cloud_id).first()
+    return _to_dict(cloud, ('id', 'openid', 'name', 'description', 'config'))
+
+
+def get_user_clouds(user_openid):
+    """Get clouds for specified user."""
+    session = get_session()
+    clouds = session.query(models.Cloud).filter_by(openid=user_openid).all()
+    return _to_dict(clouds)

@@ -1,0 +1,83 @@
+<h3>User clouds</h3>
+
+<div cg-busy="{promise:authRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:resultsRequest,message:'Loading'}"></div>
+
+<div ng-show="data" class="clouds-table">
+    <table ng-show="data" class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Cloud name</th>
+                <th>Description</th>
+                <th>Action</th>
+                <th>Config link</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr ng-repeat="cloud in data.results">
+                <td>{{cloud.name}}</td>
+                <td>{{cloud.description}}</td>
+                <td>
+                  <button type="submit" class="btn btn-primary" ng-click="run({cloud_id: cloud.id})">Run</button>
+                  <button type="submit" class="btn btn-primary btn-danger" ng-click="deleteCloud({cloud_id: cloud.id})" confirm="Are you sure you want to delete this cloud?">Delete</button>
+                </td>
+                <td>Cloud {{cloud.id}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="pages">
+        <pagination
+            total-items="totalItems"
+            ng-model="currentPage"
+            items-per-page="itemsPerPage"
+            max-size="maxSize"
+            class="pagination-sm"
+            boundary-links="true"
+            rotate="false"
+            num-pages="numPages"
+            ng-change="update()">
+        </pagination>
+    </div>
+</div>
+
+<hr/>
+
+<div class="result-filters">
+    <h4>Adding new cloud</h4>
+    <div class="row">
+        <div class="col-md-3">
+            <label for="cpid">Name</label>
+            <p class="input-group">
+                <input type="text" class="form-control"
+                    ng-model="name" close-text="Close" />
+            </p>
+        </div>
+        <div class="col-md-3">
+            <label for="cpid">Description</label>
+            <p class="input-group">
+                <input type="text" class="form-control"
+                    ng-model="description" close-text="Close" />
+            </p>
+        </div>
+        <div class="col-md-3">
+            <label for="cpid">Cloud config</label>
+            <p class="input-group">
+                <input type="file" oi-file="configFile"/>
+                {{isConfigLoaded}}
+            </p>
+        </div>
+        <div class="col-md-3"style="margin-top:24px;">
+            <button type="submit" class="btn btn-primary" ng-click="addCloud()">Add Cloud</button>
+        </div>
+    </div>
+</div>
+
+
+<div ng-show="showError" class="alert alert-danger" role="alert">
+    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+    <span class="sr-only">Error:</span>
+    {{error}}
+</div>
+
