@@ -134,20 +134,20 @@ class AuthController(rest.RestController):
         }
         url = CONF.osid.openstack_openid_endpoint
         url = api_utils.set_query_params(url, params)
-        pecan.redirect(location=url)
+        #pecan.redirect(location=url)
+        pecan.redirect(location=return_to)
 
     @pecan.expose()
     def signin_return(self):
         """Handle returned request from OpenID 2.0 IdP."""
         session = api_utils.get_user_session()
-        if pecan.request.GET.get(const.OPENID_ERROR):
-            api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
-            self._auth_failure(pecan.request.GET.get(const.OPENID_ERROR))
+        #if pecan.request.GET.get(const.OPENID_ERROR):
+        #    api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
+        #    self._auth_failure(pecan.request.GET.get(const.OPENID_ERROR))
 
-        if pecan.request.GET.get(const.OPENID_MODE) == 'cancel':
-            api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
-            self._auth_failure('Authentication canceled.')
-
+        #if pecan.request.GET.get(const.OPENID_MODE) == 'cancel':
+        #    api_utils.delete_params_from_user_session([const.CSRF_TOKEN])
+        #    self._auth_failure('Authentication canceled.')
         session_token = session.get(const.CSRF_TOKEN)
         request_token = pecan.request.GET.get(const.CSRF_TOKEN)
         if request_token != session_token:
@@ -156,9 +156,9 @@ class AuthController(rest.RestController):
 
         api_utils.verify_openid_request(pecan.request)
         user_info = {
-            'openid': pecan.request.GET.get(const.OPENID_CLAIMED_ID),
-            'email': pecan.request.GET.get(const.OPENID_NS_SREG_EMAIL),
-            'fullname': pecan.request.GET.get(const.OPENID_NS_SREG_FULLNAME)
+            'openid': '0', #pecan.request.GET.get(const.OPENID_CLAIMED_ID),
+            'email': 'a@b.com', #pecan.request.GET.get(const.OPENID_NS_SREG_EMAIL),
+            'fullname': 'A B' #pecan.request.GET.get(const.OPENID_NS_SREG_FULLNAME)
         }
         user = db.user_save(user_info)
 
