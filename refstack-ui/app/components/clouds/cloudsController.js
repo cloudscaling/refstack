@@ -18,6 +18,27 @@ refstackApp.controller('cloudsController',
          $scope.config = '';
          $scope.isConfigLoaded = '[No data]';
 
+         /** The target OpenStack marketing program to show capabilities for. */
+         $scope.target = 'platform';
+         /** The schema version of the currently selected capabilities data. */
+         $scope.version = null;
+
+         /** TODO: commonize it with other instances of this method */
+         $scope.getVersionList = function () {
+             var content_url = refstackApiUrl + '/capabilities';
+             $scope.versionsRequest =
+                 $http.get(content_url).success(function (data) {
+                     $scope.versionList = data.sort().reverse();
+                     $scope.version = $scope.versionList[0];
+                     $scope.update();
+                 }).error(function (error) {
+                     $scope.showError = true;
+                     $scope.error = 'Error retrieving version list: ' +
+                         JSON.stringify(error);
+                 });
+         };
+         $scope.getVersionList();
+
          /**
           * This will contact the Refstack API to get a listing of test run
           * results.
@@ -57,10 +78,10 @@ refstackApp.controller('cloudsController',
                      $scope.config = data;
                      $scope.isConfigLoaded = '[Config loaded]';
                      $scope.$apply();
-                 }
+                 };
                  r.readAsText(f._file);
              }
-         }
+         };
 
          $scope.addCloud = function() {
              var url = refstackApiUrl + '/clouds';
@@ -68,7 +89,7 @@ refstackApp.controller('cloudsController',
                  name: $scope.name,
                  description: $scope.description,
                  config: $scope.config
-             }
+             };
              $http.post(url, data).success(function (data) {
                  $scope.update();
              }).error(function (error) {
@@ -81,7 +102,7 @@ refstackApp.controller('cloudsController',
              $scope.name = '';
              $scope.description = '';
              $scope.isConfigLoaded = '';
-         }
+         };
 
          $scope.deleteCloud = function (cloud) {
              var content_url = [
@@ -98,7 +119,10 @@ refstackApp.controller('cloudsController',
 
          $scope.run = function (cloud) {
              var url = [
-                 refstackApiUrl, '/clouds/run?cloud_id=', cloud.cloud_id
+                 refstackApiUrl, '/clouds/run',
+                 '?cloud_id=' + cloud.cloud_id,
+                 '&version=' + $scope.version,
+                 '&target=' + $scope.target
              ].join('');
              $http.get(url).success(function () {
                  raiseAlert('success', '', 'Tests was run!');

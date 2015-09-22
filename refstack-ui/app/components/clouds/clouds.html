@@ -26,25 +26,33 @@
             </tr>
         </tbody>
     </table>
+</div>
 
-    <div class="pages">
-        <pagination
-            total-items="totalItems"
-            ng-model="currentPage"
-            items-per-page="itemsPerPage"
-            max-size="maxSize"
-            class="pagination-sm"
-            boundary-links="true"
-            rotate="false"
-            num-pages="numPages"
-            ng-change="update()">
-        </pagination>
+<!-- Capability Filters -->
+<div class="row">
+    <div class="col-md-3"><strong>Parameters to run with:</strong></div>
+    <div class="col-md-3">
+        <strong>Version:</strong>
+        <select ng-model="version" class="form-control">
+            <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
+            <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <strong>Target Program:</strong>
+        <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+        <select ng-model="target" class="form-control" ng-change="updateTargetCapabilities()">
+            <option value="platform">OpenStack Powered Platform</option>
+            <option value="compute">OpenStack Powered Compute</option>
+            <option value="object">OpenStack Powered Object Storage</option>
+            <option value="aws">OpenStack Amazon compatible</option>
+        </select>
     </div>
 </div>
 
 <hr/>
 
-<div class="result-filters">
+<div>
     <h4>Adding new cloud</h4>
     <div class="row">
         <div class="col-md-3">

@@ -94,7 +94,10 @@ API_OPTS = [
                help='This is the base URL that is used for retrieving '
                     'specific capability files. Capability file names will '
                     'be appended to this URL to get the contents of that file.'
-               )
+               ),
+    cfg.StrOpt('refstack_client_dir',
+               default=None,
+               help='Directory of refstack client cli tool'),
 ]
 
 CONF = cfg.CONF
