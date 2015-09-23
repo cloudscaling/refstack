@@ -26,7 +26,7 @@ refstackApp.controller('resultsReportController',
              'platform': 'Openstack Powered Platform',
              'compute': 'OpenStack Powered Compute',
              'object': 'OpenStack Powered Object Storage',
-             'aws': 'OpenStack Amazon compatible'
+             'aws': 'Amazon EC2'
          };
 
          /** The schema version of the currently selected capabilities data. */
