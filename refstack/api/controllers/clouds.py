@@ -136,8 +136,8 @@ class CloudsController(validation.BaseRestControllerWithValidation):
                 shutil.rmtree(dir_path)
             os.makedirs(dir_path)
 
-            t = time.time()
-            log_file = os.path.join(dir_path, 'output-%s.log' % t)
+            run_time = time.time()
+            log_file = os.path.join(dir_path, 'output-%s.log' % run_time)
 
             # store config to temp file
             cfg_file = os.path.join(dir_path, 'tempest.conf')
@@ -195,21 +195,26 @@ class CloudsController(validation.BaseRestControllerWithValidation):
                 except AttributeError:
                     LOG.exception(str(cv['tests']))
                     raise
-            test_list_file = os.path.join(dir_path, 'test-list-%s' % t)
+
+            # temporary hack
+            tests = [t for t in tests if 'regions' in t]
+
+            test_list_file = os.path.join(dir_path, 'test-list-%s' % run_time)
             LOG.error('Tests list file: ' + test_list_file)
             with open(test_list_file, 'w') as f:
                 f.write('\n'.join(sorted(tests)))
 
             # run external process
-            script_file = os.path.join(dir_path, 'run%s.sh' % t)
+            script_file = os.path.join(dir_path, 'run%s.sh' % run_time)
             LOG.error('Script file: ' + script_file)
             with open(script_file, 'w') as f:
                 f.write('#!/bin/bash\n')
                 f.write('cd %s\n' % run_dir)
                 f.write('source .venv/bin/activate\n')
                 f.write('./refstack-client test --upload --url %s -c %s -vv '
-                    '-- --load-list=%s >%s 2>&1\n' % (
-                    CONF.api.api_url, cfg_file, test_list_file, log_file))
+                    '--cpid %s -- --load-list=%s >%s 2>&1\n' % (
+                    CONF.api.api_url, cfg_file, cloud_id, test_list_file,
+                    log_file))
 
             subprocess.Popen(['/bin/bash', '-C', script_file])
         except Exception:

@@ -12,6 +12,10 @@
                 <a title="See all passed tests" ng-click="openFullTestListModal()">
                     {{resultsData.results.length}}
                 </a><br />
+                <div ng-if="isKnownCloud()">
+                    <strong>Cloud name:</strong> {{resultsData.cloud_name}}<br />
+                    <strong>Cloud description:</strong> {{resultsData.cloud_description}}<br />
+                </div>
                 <hr>
             </div>
         </div>

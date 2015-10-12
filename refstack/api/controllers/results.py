@@ -88,6 +88,13 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         test_name_list = [test_dict['name'] for test_dict in test_list]
         test_info.update({'results': test_name_list,
                           'user_role': api_utils.get_user_role(test_id)})
+
+        cloud_id = test_info['cpid']
+        cloud = db.get_cloud(cloud_id)
+        if cloud:
+            test_info.update({'cloud_name': cloud['name'],
+                              'cloud_description': cloud['description']})
+
         return test_info
 
     def store_item(self, test):
@@ -143,6 +150,11 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                 result.update({'url': parse.urljoin(
                     CONF.ui_url, CONF.api.test_results_url
                 ) % result['id']})
+                cloud_id = result['cpid']
+                cloud = db.get_cloud(cloud_id)
+                if cloud:
+                    result.update({'cloud_name': cloud['name'],
+                                   'cloud_description': cloud['description']})
 
             page = {'results': results,
                     'pagination': {

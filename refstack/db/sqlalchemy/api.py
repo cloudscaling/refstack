@@ -352,7 +352,10 @@ def delete_cloud(id):
 def get_cloud(cloud_id):
     """Get cloud by id."""
     session = get_session()
-    cloud = session.query(models.Cloud).filter_by(id=cloud_id).first()
+    clouds = session.query(models.Cloud).filter_by(id=cloud_id).all()
+    if not clouds:
+        return None
+    cloud = clouds[0]
     return _to_dict(cloud, ('id', 'openid', 'name', 'description', 'config'))
 
 

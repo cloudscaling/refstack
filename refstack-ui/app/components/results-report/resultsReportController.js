@@ -87,6 +87,12 @@ refstackApp.controller('resultsReportController',
                  $scope.resultsData.user_role === 'owner');
          };
 
+         $scope.isKnownCloud = function () {
+             return Boolean($scope.resultsData &&
+                 $scope.resultsData.cloud_name != null &&
+                 $scope.resultsData.cloud_name != '');
+         };
+
          $scope.isShared = function () {
              return Boolean($scope.resultsData &&
                  'shared' in $scope.resultsData.meta);

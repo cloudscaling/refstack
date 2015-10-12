@@ -76,7 +76,7 @@ class Test(BASE, RefStackBase):  # pragma: no cover
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return 'id', 'created_at', 'duration_seconds', 'meta'
+        return 'id', 'created_at', 'duration_seconds', 'meta', 'cpid'
 
 
 class TestResults(BASE, RefStackBase):  # pragma: no cover

@@ -32,8 +32,15 @@ def upgrade():
         sa.ForeignKeyConstraint(['openid'], ['user.openid'], ),
         mysql_charset=MYSQL_CHARSET
     )
+    op.add_column(
+        'test',
+        sa.Column('cloud_id', sa.String(length=36),
+                  sa.ForeignKey('clouds.id', name='test_to_clouds_fk'))
+    )
 
 
 def downgrade():
     """Downgrade DB."""
+    op.drop_constraint('test_to_clouds_fk', 'test', type_='foreignkey')
+    op.drop_column('test', 'cloud_id')
     op.drop_table('clouds')
