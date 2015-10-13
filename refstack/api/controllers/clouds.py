@@ -17,6 +17,7 @@
 
 import os
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -54,6 +55,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     _custom_actions = {
         "config": ["GET"],
         "run": ["GET"],
+        "stop": ["GET"],
     }
 
     @secure(api_utils.is_authenticated)
@@ -76,10 +78,13 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     def get(self):
         """Get information of all registered clouds.
 
-        TODO
+        TODO: add comment
         """
         openid = api_utils.get_user_id()
         results = db.get_user_clouds(openid)
+        for result in results:
+            pid = self._get_pid(result['id'])
+            result.update({'is_running': True if pid else False})
 
         # TODO: add paging
 
@@ -216,7 +221,27 @@ class CloudsController(validation.BaseRestControllerWithValidation):
                     CONF.api.api_url, cfg_file, cloud_id, test_list_file,
                     log_file))
 
-            subprocess.Popen(['/bin/bash', '-C', script_file])
+            subprocess.Popen(['setsid', '/bin/bash', '-C', script_file])
         except Exception:
             LOG.exception("Error in run.")
             shutil.rmtree(dir_path)
+            raise
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def stop(self):
+        params = self._get_params(['cloud_id'])
+        LOG.debug('Params for stop: ' + str(params))
+        pid = self._get_pid(params[0])
+        os.kill(-int(pid), signal.SIGKILL)
+
+    def _get_pid(self, cloud_id):
+        try:
+            output = os.popen("ps ax | grep 'cloud-%s/run' | "
+                              "grep -v 'grep'" % cloud_id).read()
+            pid = output.split()[0]
+            LOG.debug("Cloud(%s) runs tests. PID = %s" % (cloud_id, pid))
+            return pid
+        except Exception:
+            pass
+        return None

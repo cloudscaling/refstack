@@ -118,6 +118,9 @@ refstackApp.controller('cloudsController',
          };
 
          $scope.run = function (cloud) {
+             var brun = angular.element(document.querySelector('#brun' + cloud.cloud_id));
+             var bstop = angular.element(document.querySelector('#bstop' + cloud.cloud_id));
+             brun.css('display', 'none');
              var url = [
                  refstackApiUrl, '/clouds/run',
                  '?cloud_id=' + cloud.cloud_id,
@@ -125,7 +128,25 @@ refstackApp.controller('cloudsController',
                  '&target=' + $scope.target
              ].join('');
              $http.get(url).success(function () {
-                 raiseAlert('success', '', 'Tests was run!');
+                 raiseAlert('success', '', 'Tests were run!');
+                 bstop.css('display', '');
+             }).error(function (error) {
+                 raiseAlert('danger',
+                     error.title, error.detail);
+                 brun.css('display', '');
+             });
+         };
+
+         $scope.stop = function (cloud) {
+             var brun = angular.element(document.querySelector('#brun' + cloud.cloud_id));
+             var bstop = angular.element(document.querySelector('#bstop' + cloud.cloud_id));
+             bstop.css('display', 'none');
+             var url = [
+                 refstackApiUrl, '/clouds/stop',
+                 '?cloud_id=' + cloud.cloud_id
+             ].join('');
+             $http.get(url).success(function () {
+                 raiseAlert('success', '', 'Job is stopping. Please reload page.');
              }).error(function (error) {
                  raiseAlert('danger',
                      error.title, error.detail);

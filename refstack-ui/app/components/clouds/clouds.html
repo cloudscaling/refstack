@@ -15,11 +15,14 @@
         </thead>
 
         <tbody>
-            <tr ng-repeat="cloud in data.results">
+            <tr ng-repeat="cloud in data.results" id="tr{{cloud.id}}">
                 <td>{{cloud.name}}</td>
                 <td>{{cloud.description}}</td>
                 <td>
-                  <button type="submit" class="btn btn-primary" ng-click="run({cloud_id: cloud.id})">Run</button>
+                  <button type="submit" class="btn btn-primary" ng-style="cloud.is_running ? {'display': 'none'} : {}"
+                          id="brun{{cloud.id}}" ng-click="run({cloud_id: cloud.id})">Run</button>
+                  <button type="submit" class="btn btn-primary btn-warning" ng-style="cloud.is_running ? {} : {'display': 'none'}"
+                          id="bstop{{cloud.id}}" ng-click="stop({cloud_id: cloud.id})">Stop</button>
                   <button type="submit" class="btn btn-primary btn-danger" ng-click="deleteCloud({cloud_id: cloud.id})" confirm="Are you sure you want to delete this cloud?">Delete</button>
                 </td>
                 <td>Cloud {{cloud.id}}</td>
