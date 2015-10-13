@@ -7,50 +7,27 @@
     <table ng-show="data" class="table table-striped table-hover">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Cloud name</th>
                 <th>Description</th>
-                <th>Action</th>
-                <th>Config link</th>
+                <th>Current state</th>
+                <th>Remove</th>
             </tr>
         </thead>
 
         <tbody>
             <tr ng-repeat="cloud in data.results" id="tr{{cloud.id}}">
+                <td><a ui-sref="cloudDetail({cloud_id: cloud.id})">{{cloud.id}}</a></td>
                 <td>{{cloud.name}}</td>
                 <td>{{cloud.description}}</td>
+                <td>{{cloud.is_running ? "Running" : "Stopped"}}</td>
                 <td>
-                  <button type="submit" class="btn btn-primary" ng-style="cloud.is_running ? {'display': 'none'} : {}"
-                          id="brun{{cloud.id}}" ng-click="run({cloud_id: cloud.id})">Run</button>
-                  <button type="submit" class="btn btn-primary btn-warning" ng-style="cloud.is_running ? {} : {'display': 'none'}"
-                          id="bstop{{cloud.id}}" ng-click="stop({cloud_id: cloud.id})">Stop</button>
-                  <button type="submit" class="btn btn-primary btn-danger" ng-click="deleteCloud({cloud_id: cloud.id})" confirm="Are you sure you want to delete this cloud?">Delete</button>
+                    <button type="submit" class="btn btn-primary btn-danger" ng-click="deleteCloud({cloud_id: cloud.id})"
+                            confirm="Are you sure you want to delete this cloud?"><bold>X</bold></button>
                 </td>
-                <td>Cloud {{cloud.id}}</td>
             </tr>
         </tbody>
     </table>
-</div>
-
-<!-- Capability Filters -->
-<div class="row">
-    <div class="col-md-3"><strong>Parameters to run with:</strong></div>
-    <div class="col-md-3">
-        <strong>Version:</strong>
-        <select ng-model="version" class="form-control">
-            <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-            <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
-        </select>
-    </div>
-    <div class="col-md-4">
-        <strong>Target Program:</strong>
-        <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
-        <select ng-model="target" class="form-control" ng-change="updateTargetCapabilities()">
-            <option value="platform">OpenStack Powered Platform</option>
-            <option value="compute">OpenStack Powered Compute</option>
-            <option value="object">OpenStack Powered Object Storage</option>
-            <option value="aws">Amazon EC2</option>
-        </select>
-    </div>
 </div>
 
 <hr/>

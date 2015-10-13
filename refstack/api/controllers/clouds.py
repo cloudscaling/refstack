@@ -96,6 +96,19 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
         return page
 
+    @pecan.expose('json')
+    def get_one(self, cloud_id):
+        """Get information about cloud.
+
+        TODO: add comment
+        """
+        cloud = db.get_cloud(cloud_id)
+        pid = self._get_pid(cloud['id'])
+        cloud['is_running'] = True if pid else False
+        openid = api_utils.get_user_id()
+        cloud['can_edit'] = openid == cloud['openid']
+        return cloud
+
     @secure(api_utils.is_authenticated)
     @pecan.expose()
     def get_config(self):

@@ -36,15 +36,20 @@ refstackApp.config([
                 templateUrl: '/components/results/results.html',
                 controller: 'resultsController'
             }).
+            state('resultsDetail', {
+                url: '/results/:testID',
+                templateUrl: '/components/results-report/resultsReport.html',
+                controller: 'resultsReportController'
+            }).
             state('userClouds', {
                 url: '/user_clouds',
                 templateUrl: '/components/clouds/clouds.html',
                 controller: 'cloudsController'
             }).
-            state('resultsDetail', {
-                url: '/results/:testID',
-                templateUrl: '/components/results-report/resultsReport.html',
-                controller: 'resultsReportController'
+            state('cloudDetail', {
+                url: '/clouds/:cloud_id',
+                templateUrl: '/components/cloud/cloud.html',
+                controller: 'cloudController'
             }).
             state('profile', {
                 url: '/profile',
