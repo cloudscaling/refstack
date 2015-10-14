@@ -159,6 +159,11 @@ def store_cloud(cloud_info):
     return IMPL.store_cloud(cloud_info)
 
 
+def update_cloud(cloud_info):
+    """Update cloud in to DB."""
+    return IMPL.update_cloud(cloud_info)
+
+
 def delete_cloud(cloud_id):
     """Delete cloud from DB."""
     return IMPL.delete_cloud(cloud_id)

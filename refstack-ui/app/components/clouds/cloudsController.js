@@ -63,6 +63,12 @@ refstackApp.controller('cloudsController',
          };
 
          $scope.addCloud = function() {
+             if ($scope.config == '') {
+                 $scope.showError = true;
+                 $scope.error = 'Config is not loaded.';
+                 return;
+             }
+
              var url = refstackApiUrl + '/clouds';
              var data = {
                  name: $scope.name,
@@ -80,7 +86,9 @@ refstackApp.controller('cloudsController',
 
              $scope.name = '';
              $scope.description = '';
+             $scope.config = '';
              $scope.isConfigLoaded = '';
+             angular.element(document.querySelector('#configFile')).val(null);
          };
 
          $scope.deleteCloud = function (cloud) {

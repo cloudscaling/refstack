@@ -34,7 +34,6 @@ def list_opts():
 import itertools
 
 import refstack.api.app
-import refstack.api.controllers.v1
 import refstack.api.controllers.auth
 import refstack.db.api
 

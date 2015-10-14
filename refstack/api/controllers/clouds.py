@@ -26,11 +26,8 @@ import time
 from oslo_config import cfg
 from oslo_log import log
 import pecan
-from pecan import rest
 from pecan.secure import secure
 import requests
-import requests_cache
-from six.moves.urllib import parse
 
 from refstack import db
 from refstack.api import utils as api_utils
@@ -41,20 +38,62 @@ from refstack.api import exceptions as api_exc
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
-# Cached requests will expire after 10 minutes.
-requests_cache.install_cache(cache_name='github_cache',
-                             backend='memory',
-                             expire_after=600)
+
+def _get_params(params):
+    result = list()
+    for param in params:
+        value = pecan.request.GET.get(param).strip()
+        if not value:
+            raise api_exc.ValidationError('Param "%s" can not be empty'
+                                          % param)
+        result.append(value)
+    return result
+
+
+class CloudConfigController(validation.BaseRestControllerWithValidation):
+
+    """/v1/cloud/config handler."""
+
+    __validator__ = validators.BaseValidator
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def get(self):
+        """...
+
+        TODO: add comment
+        """
+        params = _get_params(['cloud_id'])
+        LOG.debug('Params: ' + str(params))
+        cloud_id = params[0]
+
+        return {'data': db.get_cloud(cloud_id)['config'], 'partial': False}
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json', method='PUT')
+    def put(self, **kw):
+        """...
+
+        TODO: add comment
+        """
+        LOG.debug('Input: ' + str(kw))
+
+        cloud = db.get_cloud(kw['cloud_id'])
+        cloud['config'] = kw['config']
+        db.update_cloud(cloud)
+
+        return {'result': True}
 
 
 class CloudsController(validation.BaseRestControllerWithValidation):
 
     """/v1/clouds handler."""
 
+    config = CloudConfigController()
+
     __validator__ = validators.CloudValidator
 
     _custom_actions = {
-        "config": ["GET"],
         "lastlog": ["GET"],
         "run": ["GET"],
         "stop": ["GET"],
@@ -113,25 +152,12 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
-    def config(self):
-        """Get information of all registered clouds.
-
-        TODO: add comment
-        """
-        params = self._get_params(['cloud_id'])
-        LOG.debug('Params: ' + str(params))
-        cloud_id = params[0]
-
-        return {'data': db.get_cloud(cloud_id)['config'], 'partial': False}
-
-    @secure(api_utils.is_authenticated)
-    @pecan.expose('json')
     def lastlog(self):
-        """Get information of all registered clouds.
+        """...
 
         TODO: add comment
         """
-        params = self._get_params(['cloud_id', 'line_count'])
+        params = _get_params(['cloud_id', 'line_count'])
         LOG.debug('Params: ' + str(params))
         cloud_id = params[0]
         line_count = int(params[1])
@@ -162,20 +188,10 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
         return {'data': 'Could not find log file', 'partial': False}
 
-    def _get_params(self, params):
-        result = list()
-        for param in params:
-            value = pecan.request.GET.get(param).strip()
-            if not value:
-                raise api_exc.ValidationError('Param "%s" can not be empty'
-                                              % param)
-            result.append(value)
-        return result
-
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
     def run(self):
-        params = self._get_params(['cloud_id', 'version', 'target'])
+        params = _get_params(['cloud_id', 'version', 'target'])
         LOG.debug('Params for run: ' + str(params))
         cloud_id = params[0]
         version = params[1]
@@ -284,7 +300,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
     def stop(self):
-        params = self._get_params(['cloud_id'])
+        params = _get_params(['cloud_id'])
         LOG.debug('Params for stop: ' + str(params))
         pid = self._get_pid(params[0])
         os.kill(-int(pid), signal.SIGKILL)

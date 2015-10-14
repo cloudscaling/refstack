@@ -341,6 +341,19 @@ def store_cloud(cloud_info):
     return cloud.id
 
 
+def update_cloud(cloud_info):
+    """Update cloud DB record if it exists."""
+    session = get_session()
+    id_ = cloud_info['id']
+    cloud = session.query(models.Cloud).filter_by(id=id_).first()
+    if cloud is None:
+        raise NotFound('Cloud with id %s not found' % id_)
+
+    with session.begin():
+        cloud.update(cloud_info)
+        cloud.save(session=session)
+
+
 def delete_cloud(id):
     """Delete key from DB."""
     session = get_session()
@@ -352,10 +365,9 @@ def delete_cloud(id):
 def get_cloud(cloud_id):
     """Get cloud by id."""
     session = get_session()
-    clouds = session.query(models.Cloud).filter_by(id=cloud_id).all()
-    if not clouds:
+    cloud = session.query(models.Cloud).filter_by(id=cloud_id).first()
+    if cloud is None:
         return None
-    cloud = clouds[0]
     return _to_dict(cloud, ('id', 'openid', 'name', 'description', 'config'))
 
 

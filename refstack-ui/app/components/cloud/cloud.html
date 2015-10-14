@@ -1,4 +1,4 @@
-<div ng-show="cloudDetail"  class="container-fluid">
+<div ng-show="cloudDetail" class="container-fluid">
     <div class="row">
         <div class="pull-left">
             <div class="test-report">
@@ -24,34 +24,49 @@
     </div>
 </div>
 
-<!-- Capability Filters & Run -->
-<div class="row" ng-show="isEditingAllowed()" id="brun" ng-style="cloudDetail.is_running ? {'display': 'none'} : {}">
+<div class="container-fluid" ng-show="isEditingAllowed()">
     <hr>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary" ng-click="run({cloud_id: cloud_id})">Run with:</button>
-    </div>
     <div class="col-md-3">
-        <strong>Version:</strong>
-        <select ng-model="version" class="form-control">
-            <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-            <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
-        </select>
+        <label for="cpid">New cloud config</label>
+        <p class="input-group">
+            <input type="file" oi-file="configFile" id="configFile"/>
+            {{isConfigLoaded}}
+        </p>
     </div>
-    <div class="col-md-3">
-        <strong>Target Program:</strong>
-        <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
-        <select ng-model="target" class="form-control" ng-change="updateTargetCapabilities()">
-            <option value="platform">OpenStack Powered Platform</option>
-            <option value="compute">OpenStack Powered Compute</option>
-            <option value="object">OpenStack Powered Object Storage</option>
-            <option value="aws">Amazon EC2</option>
-        </select>
+    <div class="col-md-3"style="margin-top:24px;">
+        <button type="submit" class="btn btn-primary" ng-click="updateConfig()">Update</button>
     </div>
 </div>
-<div class="row" ng-show="isEditingAllowed()" id="bstop" ng-style="cloudDetail.is_running ? {} : {'display': 'none'}">
+
+<!-- Capability Filters & Run -->
+<div class="container-fluid" ng-show="isEditingAllowed()">
     <hr>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary btn-warning" ng-click="stop({cloud_id: cloud_id})">Stop</button>
+    <div class="row" ng-show="isEditingAllowed()" id="brun" ng-style="cloudDetail.is_running ? {'display': 'none'} : {}">
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary" ng-click="run({cloud_id: cloud_id})">Run with:</button>
+        </div>
+        <div class="col-md-3">
+            <strong>Version:</strong>
+            <select ng-model="version" class="form-control">
+                <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
+                <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <strong>Target Program:</strong>
+            <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+            <select ng-model="target" class="form-control" ng-change="updateTargetCapabilities()">
+                <option value="platform">OpenStack Powered Platform</option>
+                <option value="compute">OpenStack Powered Compute</option>
+                <option value="object">OpenStack Powered Object Storage</option>
+                <option value="aws">Amazon EC2</option>
+            </select>
+        </div>
+    </div>
+    <div class="row" ng-show="isEditingAllowed()" id="bstop" ng-style="cloudDetail.is_running ? {} : {'display': 'none'}">
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-warning" ng-click="stop({cloud_id: cloud_id})">Stop</button>
+        </div>
     </div>
 </div>
 

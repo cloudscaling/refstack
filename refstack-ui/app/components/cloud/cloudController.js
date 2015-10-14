@@ -74,6 +74,31 @@ refstackApp.controller('cloudController',
              }
          };
 
+         $scope.updateConfig = function() {
+             if ($scope.config == '') {
+                 $scope.showError = true;
+                 $scope.error = 'Config is not loaded.';
+                 return;
+             }
+             var url = refstackApiUrl + "/clouds/config";
+             var data = {
+                 cloud_id: $scope.cloud_id,
+                 config: $scope.config
+             };
+             $http.put(url, data).success(function (data) {
+                 raiseAlert('success', '', 'Config has updated!');
+             }).error(function (error) {
+                 $scope.showError = true;
+                 $scope.error =
+                     'Error updating cloud config: ' +
+                     JSON.stringify(error);
+             });
+
+             $scope.config = '';
+             $scope.isConfigLoaded = '';
+             angular.element(document.querySelector('#configFile')).val(null);
+         };
+
          $scope.run = function () {
              var brun = angular.element(document.querySelector('#brun'));
              var bstop = angular.element(document.querySelector('#bstop'));
