@@ -51,6 +51,11 @@ refstackApp.config([
                 templateUrl: '/components/cloud/cloud.html',
                 controller: 'cloudController'
             }).
+            state('cloudData', {
+                url: '/clouds/:cloud_id/:data_type/:partial',
+                templateUrl: '/components/cloud/cloudData.html',
+                controller: 'cloudDataController'
+            }).
             state('profile', {
                 url: '/profile',
                 templateUrl: '/components/profile/profile.html',

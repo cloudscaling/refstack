@@ -16,6 +16,7 @@
 """Test clouds controller."""
 
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -54,6 +55,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
     _custom_actions = {
         "config": ["GET"],
+        "lastlog": ["GET"],
         "run": ["GET"],
         "stop": ["GET"],
     }
@@ -62,7 +64,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json')
     def store_item(self, cloud):
         """Handler for storing item. Should return new item id."""
-        cloud['openid'] = api_utils.get_user_id();
+        cloud['openid'] = api_utils.get_user_id()
         cloud_id = db.store_cloud(cloud)
         return {'cloud_id': cloud_id}
 
@@ -110,16 +112,55 @@ class CloudsController(validation.BaseRestControllerWithValidation):
         return cloud
 
     @secure(api_utils.is_authenticated)
-    @pecan.expose()
-    def get_config(self):
+    @pecan.expose('json')
+    def config(self):
         """Get information of all registered clouds.
 
-        TODO
+        TODO: add comment
         """
         params = self._get_params(['cloud_id'])
+        LOG.debug('Params: ' + str(params))
         cloud_id = params[0]
 
-        return db.get_cloud(cloud_id)['config']
+        return {'data': db.get_cloud(cloud_id)['config'], 'partial': False}
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def lastlog(self):
+        """Get information of all registered clouds.
+
+        TODO: add comment
+        """
+        params = self._get_params(['cloud_id', 'line_count'])
+        LOG.debug('Params: ' + str(params))
+        cloud_id = params[0]
+        line_count = int(params[1])
+
+        try:
+            ftime = None
+            log_file = None
+            dir_path = os.path.join(tempfile.gettempdir(), 'cloud-' + cloud_id)
+            if os.path.exists(dir_path):
+                for filename in os.listdir(dir_path):
+                    if re.search('output-\d*.\d*.log', filename):
+                        filename = os.path.join(dir_path, filename)
+                        ctime = os.path.getmtime(filename)
+                        if not ftime or ftime < ctime:
+                            ftime = ctime
+                            log_file = filename
+            if log_file:
+                with open(log_file, 'r') as f:
+                    content = f.read()
+                if not line_count or line_count >= content.count('\n'):
+                    return {'data': content, 'partial': False}
+
+                content = content.splitlines()[-line_count:]
+                content = '...\n' + '\n'.join(content)
+                return {'data': content, 'partial': True}
+        except Exception:
+            LOG.exception("Couldn't read log file")
+
+        return {'data': 'Could not find log file', 'partial': False}
 
     def _get_params(self, params):
         result = list()

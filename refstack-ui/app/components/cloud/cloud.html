@@ -5,10 +5,6 @@
                 <strong>Cloud ID:</strong> {{cloud_id}}<br />
                 <strong>Name:</strong> {{cloudDetail.name}}<br />
                 <strong>Description:</strong> {{cloudDetail.description}}<br />
-
-                <a title="See all passed tests" ng-click="openFullTestListModal()">
-                    {{resultsData.results.length}}
-                </a><br />
             </div>
         </div>
         <div class="pull-right">
@@ -18,20 +14,19 @@
     </div>
 </div>
 
-<hr>
-
-<div class="container-fluid">
+<div class="container-fluid" ng-show="isEditingAllowed()">
+    <hr>
     <div class="row">
         <div class="pull-left">
-            <a target="_blank">View Config (new pane)</a><br />
-            <a target="_blank">View last log (new pane)</a><br />
+            <a ui-sref="cloudData({cloud_id: cloud_id, data_type: 'config'})" target="_blank">View config</a><br />
+            <a ui-sref="cloudData({cloud_id: cloud_id, data_type: 'lastlog', partial: 1})" target="_blank">View last log</a><br />
         </div>
     </div>
 </div>
-<hr>
 
 <!-- Capability Filters & Run -->
-<div class="row" ng-show="isEditingAllowed()"id="brun" ng-style="cloudDetail.is_running ? {'display': 'none'} : {}">
+<div class="row" ng-show="isEditingAllowed()" id="brun" ng-style="cloudDetail.is_running ? {'display': 'none'} : {}">
+    <hr>
     <div class="col-md-2">
         <button type="submit" class="btn btn-primary" ng-click="run({cloud_id: cloud_id})">Run with:</button>
     </div>
@@ -54,6 +49,7 @@
     </div>
 </div>
 <div class="row" ng-show="isEditingAllowed()" id="bstop" ng-style="cloudDetail.is_running ? {} : {'display': 'none'}">
+    <hr>
     <div class="col-md-2">
         <button type="submit" class="btn btn-primary btn-warning" ng-click="stop({cloud_id: cloud_id})">Stop</button>
     </div>

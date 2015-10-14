@@ -1,0 +1,7 @@
+<div class="container-fluid">
+    <strong>{{data_type}} for cloud {{cloud_id}}</strong><br />
+    <div ng-show="needFullLink">
+        <a ng-click="getCloudData(false);">Full {{data_type}}</a>
+    </div>
+    <pre>{{data}}</pre>
+</div>
