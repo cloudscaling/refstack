@@ -5,7 +5,7 @@
         <div class="pull-left">
             <div class="test-report">
                 <strong>Test ID:</strong> {{testId}}<br />
-                <div ng-if="isEditingAllowed()"><strong>Cloud ID:</strong> {{resultsData.cpid}}<br /></div>
+                <div ng-if="isEditingAllowed()"><strong>Cloud ID:</strong> <a ui-sref="cloudDetail({cloud_id: resultsData.cpid})">{{resultsData.cpid}}</a><br /></div>
                 <strong>Upload Date:</strong> {{resultsData.created_at}} UTC<br />
                 <strong>Duration:</strong> {{resultsData.duration_seconds}} seconds<br />
                 <strong>Total Number of Passed Tests:</strong>

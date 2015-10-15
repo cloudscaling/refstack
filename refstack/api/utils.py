@@ -83,10 +83,11 @@ def parse_input_params(expected_input_params):
                 '' % {'start': const.START_DATE, 'end': const.END_DATE})
     if const.SIGNED in filters:
         if is_authenticated():
-            filters[const.OPENID] = get_user_id()
+            uid = get_user_id()
+            filters[const.OPENID] = uid
             filters[const.USER_PUBKEYS] = [
                 ' '.join((pk['format'], pk['pubkey']))
-                for pk in get_user_public_keys()
+                for pk in db.get_user_pubkeys(uid)
             ]
         else:
             raise api_exc.ParseInputsError(
@@ -241,9 +242,21 @@ def _check_owner(test_id):
     """Check that user has access to specified test run as owner."""
     if not is_authenticated():
         return False
+
+    # Check that test has pubkey attached that equals to user key
     test_pubkey = db.get_test_meta_key(test_id, const.PUBLIC_KEY)
-    return test_pubkey in [' '.join((pk['format'], pk['pubkey']))
-                           for pk in get_user_public_keys()]
+    pubkeys = [' '.join((pk['format'], pk['pubkey']))
+               for pk in get_user_public_keys()]
+    if test_pubkey in pubkeys:
+        return True
+
+    # Check that test has link to cloud that belongs to user
+    test = db.get_test(test_id)
+    cloud = db.get_cloud(test['cpid'])
+    if cloud['openid'] == get_user_id():
+        return True
+
+    return False
 
 
 def check_permissions(level):

@@ -150,6 +150,7 @@ class ResultsController(validation.BaseRestControllerWithValidation):
                 result.update({'url': parse.urljoin(
                     CONF.ui_url, CONF.api.test_results_url
                 ) % result['id']})
+
                 cloud_id = result['cpid']
                 cloud = db.get_cloud(cloud_id)
                 if cloud:

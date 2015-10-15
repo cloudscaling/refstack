@@ -197,6 +197,10 @@ class CloudsController(validation.BaseRestControllerWithValidation):
         version = params[1]
         target = params[2]
 
+        if self._get_pid(cloud_id):
+            raise api_exc.ValidationError(
+                'Cloud tests already run.')
+
         run_dir = CONF.api.refstack_client_dir
         if not run_dir:
             raise api_exc.ValidationError(
