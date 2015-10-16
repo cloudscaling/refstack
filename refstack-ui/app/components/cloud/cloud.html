@@ -8,7 +8,9 @@
             </div>
         </div>
         <div class="pull-right">
-            <div>
+            <div ng-show="isEditingAllowed()">
+                <button class="btn btn-warning" ng-hide="isShared()" ng-click="shareCloud(1)" confirm="Are you sure you want to share this cloud with the community?">Share</button>
+                <button class="btn btn-success" ng-show="isShared()" ng-click="shareCloud(0)">Unshare</button>
             </div>
         </div>
     </div>

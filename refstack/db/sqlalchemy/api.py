@@ -336,6 +336,7 @@ def store_cloud(cloud_info):
     cloud.name = cloud_info['name']
     cloud.description = cloud_info.get('description')
     cloud.config = cloud_info['config']
+    cloud.shared = False
     session = get_session()
     with session.begin():
         clouds_collision = (session.
@@ -375,7 +376,16 @@ def get_cloud(cloud_id):
     cloud = session.query(models.Cloud).filter_by(id=cloud_id).first()
     if cloud is None:
         return None
-    return _to_dict(cloud, ('id', 'openid', 'name', 'description', 'config'))
+    return _to_dict(cloud, ('id', 'openid', 'name', 'description', 'shared'))
+
+
+def get_cloud_config(cloud_id):
+    """Get cloud config by id."""
+    session = get_session()
+    config = session.query(models.Cloud.config).filter_by(id=cloud_id).first()
+    if config is None:
+        raise NotFound('Config for cloud %s could not be found' % cloud_id)
+    return config[0]
 
 
 def get_user_clouds(user_openid):

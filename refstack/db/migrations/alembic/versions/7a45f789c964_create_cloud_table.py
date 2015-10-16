@@ -28,6 +28,7 @@ def upgrade():
                   nullable=False, index=True),
         sa.Column('name', sa.String(length=80), nullable=False),
         sa.Column('description', sa.Text()),
+        sa.Column('shared', sa.Boolean(), nullable=False),
         sa.Column('config', sa.Text(), nullable=False),
         sa.ForeignKeyConstraint(['openid'], ['user.openid'], ),
         mysql_charset=MYSQL_CHARSET

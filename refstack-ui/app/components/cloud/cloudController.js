@@ -80,9 +80,8 @@ refstackApp.controller('cloudController',
                  $scope.error = 'Config is not loaded.';
                  return;
              }
-             var url = refstackApiUrl + "/clouds/config";
+             var url = refstackApiUrl + "/clouds/" + $scope.cloud_id + "/config";
              var data = {
-                 cloud_id: $scope.cloud_id,
                  config: $scope.config
              };
              $http.put(url, data).success(function (data) {
@@ -138,6 +137,24 @@ refstackApp.controller('cloudController',
          $scope.isEditingAllowed = function () {
              return Boolean($scope.cloudDetail &&
                  $scope.cloudDetail.can_edit);
+         };
+
+         $scope.isShared = function () {
+             return Boolean($scope.cloudDetail && $scope.cloudDetail.shared);
+         };
+
+         $scope.shareCloud = function (shareState) {
+             var content_url = [
+                 refstackApiUrl, '/clouds/', $scope.cloud_id, '/shared'
+             ].join('');
+             $scope.shareRequest =
+                 $http.post(content_url, shareState.toString()).success(function () {
+                     $scope.cloudDetail.shared = shareState;
+                     raiseAlert('success', '', 'Cloud share option changed!');
+                 }).error(function (error) {
+                     raiseAlert('danger',
+                         error.title, error.detail);
+                 });
          };
      }]
 );

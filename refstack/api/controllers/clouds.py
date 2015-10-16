@@ -26,8 +26,10 @@ import time
 from oslo_config import cfg
 from oslo_log import log
 import pecan
+from pecan import rest
 from pecan.secure import secure
 import requests
+from webob import exc
 
 from refstack import db
 from refstack.api import utils as api_utils
@@ -50,117 +52,51 @@ def _get_params(params):
     return result
 
 
-class CloudConfigController(validation.BaseRestControllerWithValidation):
+def _check_cloud_owner(cloud_id):
+    cloud = db.get_cloud(cloud_id)
+    if cloud['openid'] != api_utils.get_user_id():
+        raise exc.HTTPUnauthorized('Only owner can do it with the cloud.')
 
-    """/v1/cloud/config handler."""
 
-    __validator__ = validators.BaseValidator
+class CloudConfigController(rest.RestController):
+
+    """/v1/clouds/cloud_id/config handler."""
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
-    def get(self):
-        """...
+    def get(self, cloud_id):
+        """..."""
+        _check_cloud_owner(cloud_id)
 
-        TODO: add comment
-        """
-        params = _get_params(['cloud_id'])
-        LOG.debug('Params: ' + str(params))
-        cloud_id = params[0]
-
-        return {'data': db.get_cloud(cloud_id)['config'], 'partial': False}
+        config = db.get_cloud_config(cloud_id)
+        return {'data': config, 'partial': False}
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json', method='PUT')
-    def put(self, **kw):
-        """...
+    def put(self, cloud_id, **kw):
+        """..."""
+        _check_cloud_owner(cloud_id)
 
-        TODO: add comment
-        """
-        LOG.debug('Input: ' + str(kw))
-
-        cloud = db.get_cloud(kw['cloud_id'])
+        cloud = {}
+        cloud['id'] = cloud_id
         cloud['config'] = kw['config']
         db.update_cloud(cloud)
 
-        return {'result': True}
+        pecan.response.status = 201
 
 
-class CloudsController(validation.BaseRestControllerWithValidation):
+class CloudLastlogController(rest.RestController):
 
-    """/v1/clouds handler."""
-
-    config = CloudConfigController()
-
-    __validator__ = validators.CloudValidator
-
-    _custom_actions = {
-        "lastlog": ["GET"],
-        "run": ["GET"],
-        "stop": ["GET"],
-    }
+    """/v1/clouds/cloud_id/lastlog handler."""
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
-    def store_item(self, cloud):
-        """Handler for storing item. Should return new item id."""
-        cloud['openid'] = api_utils.get_user_id()
-        cloud_id = db.store_cloud(cloud)
-        return {'cloud_id': cloud_id}
-
-    @secure(api_utils.is_authenticated)
-    @pecan.expose('json')
-    def delete(self, cloud_id):
-        """Delete test run."""
-        db.delete_cloud(cloud_id)
-        pecan.response.status = 204
-
-    @secure(api_utils.is_authenticated)
-    @pecan.expose('json')
-    def get(self):
-        """Get information of all registered clouds.
-
-        TODO: add comment
-        """
-        openid = api_utils.get_user_id()
-        results = db.get_user_clouds(openid)
-        for result in results:
-            pid = self._get_pid(result['id'])
-            result.update({'is_running': True if pid else False})
-
-        # TODO: add paging
-
-        page = {'results': results,
-                'pagination': {
-                    'current_page': 1,
-                    'total_pages': 1
-                }}
-
-        return page
-
-    @pecan.expose('json')
-    def get_one(self, cloud_id):
-        """Get information about cloud.
-
-        TODO: add comment
-        """
-        cloud = db.get_cloud(cloud_id)
-        pid = self._get_pid(cloud['id'])
-        cloud['is_running'] = True if pid else False
-        openid = api_utils.get_user_id()
-        cloud['can_edit'] = openid == cloud['openid']
-        return cloud
-
-    @secure(api_utils.is_authenticated)
-    @pecan.expose('json')
-    def lastlog(self):
-        """...
-
-        TODO: add comment
-        """
-        params = _get_params(['cloud_id', 'line_count'])
+    def get(self, cloud_id):
+        params = _get_params(['line_count'])
         LOG.debug('Params: ' + str(params))
-        cloud_id = params[0]
-        line_count = int(params[1])
+        line_count = int(params[0])
+
+        _check_cloud_owner(cloud_id)
 
         try:
             ftime = None
@@ -188,6 +124,85 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
         return {'data': 'Could not find log file', 'partial': False}
 
+
+class CloudShareController(rest.RestController):
+
+    """/v1/clouds/<cloud_id>/shared handler."""
+
+    @pecan.expose('json')
+    def post(self, cloud_id):
+        _check_cloud_owner(cloud_id)
+
+        cloud = {}
+        cloud['id'] = cloud_id
+        cloud['shared'] = pecan.request.body
+        db.update_cloud(cloud)
+
+        pecan.response.status = 201
+
+
+class CloudsController(validation.BaseRestControllerWithValidation):
+
+    """/v1/clouds handler."""
+
+    config = CloudConfigController()
+    lastlog = CloudLastlogController()
+    shared = CloudShareController()
+
+    __validator__ = validators.CloudValidator
+
+    _custom_actions = {
+        "run": ["GET"],
+        "stop": ["GET"],
+    }
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def store_item(self, cloud):
+        """Handler for storing item. Should return new item id."""
+        cloud['openid'] = api_utils.get_user_id()
+        cloud_id = db.store_cloud(cloud)
+        return {'cloud_id': cloud_id}
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def delete(self, cloud_id):
+        """Delete cloud."""
+        _check_cloud_owner(cloud_id)
+
+        db.delete_cloud(cloud_id)
+        pecan.response.status = 204
+
+    @secure(api_utils.is_authenticated)
+    @pecan.expose('json')
+    def get(self):
+        """Get information of all registered clouds."""
+        openid = api_utils.get_user_id()
+        results = db.get_user_clouds(openid)
+        for result in results:
+            pid = self._get_pid(result['id'])
+            result.update({'is_running': True if pid else False})
+
+        # TODO: add paging
+
+        page = {'results': results,
+                'pagination': {
+                    'current_page': 1,
+                    'total_pages': 1
+                }}
+
+        return page
+
+    @pecan.expose('json')
+    def get_one(self, cloud_id):
+        """Get information about cloud."""
+        cloud = db.get_cloud(cloud_id)
+        pid = self._get_pid(cloud['id'])
+        cloud['is_running'] = True if pid else False
+        openid = api_utils.get_user_id()
+        cloud['can_edit'] = openid == cloud['openid']
+        return cloud
+
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
     def run(self):
@@ -197,6 +212,15 @@ class CloudsController(validation.BaseRestControllerWithValidation):
         version = params[1]
         target = params[2]
 
+        LOG.debug("cloudId = " + str(cloud_id))
+        # check existense
+        cloud = db.get_cloud(cloud_id)
+        if not cloud:
+            raise api_exc.ValidationError(
+                'Cloud %s could not be found.' % cloud_id)
+
+        _check_cloud_owner(cloud_id)
+
         if self._get_pid(cloud_id):
             raise api_exc.ValidationError(
                 'Cloud tests already run.')
@@ -205,9 +229,6 @@ class CloudsController(validation.BaseRestControllerWithValidation):
         if not run_dir:
             raise api_exc.ValidationError(
                 'There is no run directory configured')
-
-        LOG.debug("cloudId = " + str(cloud_id))
-        cloud = db.get_cloud(cloud_id)
 
         try:
             dir_path = os.path.join(tempfile.gettempdir(), 'cloud-' + cloud_id)
@@ -219,10 +240,11 @@ class CloudsController(validation.BaseRestControllerWithValidation):
             log_file = os.path.join(dir_path, 'output-%s.log' % run_time)
 
             # store config to temp file
+            config = db.get_cloud_config(cloud_id)
             cfg_file = os.path.join(dir_path, 'tempest.conf')
             LOG.debug('Config file: ' + cfg_file)
             with open(cfg_file, 'w') as f:
-                f.write(cloud['config'])
+                f.write(config)
 
             # prepare tests list and store it in file
             # TODO: commonize it with code in capabilities
@@ -306,7 +328,11 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     def stop(self):
         params = _get_params(['cloud_id'])
         LOG.debug('Params for stop: ' + str(params))
-        pid = self._get_pid(params[0])
+        cloud_id = params[0]
+
+        _check_cloud_owner(cloud_id)
+
+        pid = self._get_pid(cloud_id)
         os.kill(-int(pid), signal.SIGKILL)
 
     def _get_pid(self, cloud_id):

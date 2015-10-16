@@ -253,7 +253,7 @@ def _check_owner(test_id):
     # Check that test has link to cloud that belongs to user
     test = db.get_test(test_id)
     cloud = db.get_cloud(test['cpid'])
-    if cloud['openid'] == get_user_id():
+    if cloud and cloud['openid'] == get_user_id():
         return True
 
     return False

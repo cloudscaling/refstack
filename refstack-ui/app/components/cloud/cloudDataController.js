@@ -17,9 +17,10 @@ refstackApp.controller('cloudDataController',
          $scope.needFullLink = false;
 
          $scope.getCloudData = function(partial) {
-             var url = refstackApiUrl + "/clouds/" + $scope.data_type 
-                       + "?cloud_id=" + $scope.cloud_id
-                       + "&line_count=" + (partial ? 50 : 0);
+             var url = refstackApiUrl + "/clouds/"
+                       + $scope.cloud_id + "/"
+                       + $scope.data_type 
+                       + "?line_count=" + (partial ? 50 : 0);
              $http.get(url).success(function (data) {
                  $scope.data = data.data;
                  $scope.needFullLink = data.partial ? true : false;

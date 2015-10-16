@@ -174,6 +174,11 @@ def get_cloud(cloud_id):
     return IMPL.get_cloud(cloud_id)
 
 
+def get_cloud_config(cloud_id):
+    """Get cloud config by id."""
+    return IMPL.get_cloud_config(cloud_id)
+
+
 def get_user_clouds(user_openid):
     """Get clouds for specified user."""
     return IMPL.get_user_clouds(user_openid)

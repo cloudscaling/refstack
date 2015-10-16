@@ -180,8 +180,9 @@ class Cloud(BASE, RefStackBase):  # pragma: no cover
     name = sa.Column(sa.String(80), nullable=False)
     description = sa.Column(sa.Text())
     config = sa.Column(sa.Text(), nullable=False)
+    shared = sa.Column(sa.Boolean(), nullable=False)
 
     @property
     def default_allowed_keys(self):
         """Default keys."""
-        return 'id', 'openid', 'name', 'description'
+        return 'id', 'openid', 'name', 'description', 'shared'
