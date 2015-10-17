@@ -363,11 +363,20 @@ def update_cloud(cloud_info):
 
 
 def delete_cloud(id):
-    """Delete key from DB."""
+    """Delete cloud from DB."""
     session = get_session()
     with session.begin():
-        key = session.query(models.Cloud).filter_by(id=id).first()
-        session.delete(key)
+        cloud = session.query(models.Cloud).filter_by(id=id).first()
+        session.delete(cloud)
+
+
+def delete_cloud_results(id):
+    """Delete cloud results from DB."""
+    session = get_session()
+    with session.begin():
+        results = session.query(models.Test.id).filter_by(cpid=id).all()
+        for result in results:
+            delete_test(result[0])
 
 
 def get_cloud(cloud_id):

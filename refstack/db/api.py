@@ -169,6 +169,11 @@ def delete_cloud(cloud_id):
     return IMPL.delete_cloud(cloud_id)
 
 
+def delete_cloud_results(cloud_id):
+    """Delete cloud results from DB."""
+    return IMPL.delete_cloud_results(cloud_id)
+
+
 def get_cloud(cloud_id):
     """Get cloud by id."""
     return IMPL.get_cloud(cloud_id)

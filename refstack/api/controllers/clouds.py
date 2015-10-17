@@ -170,6 +170,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
         """Delete cloud."""
         _check_cloud_owner(cloud_id)
 
+        db.delete_cloud_results(cloud_id)
         db.delete_cloud(cloud_id)
         pecan.response.status = 204
 
