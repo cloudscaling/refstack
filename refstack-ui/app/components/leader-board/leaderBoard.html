@@ -1,20 +1,19 @@
 <h3>Leader board</h3>
 
-<!-- Capability Filters & Run -->
+<!-- Capability Filters -->
 <div class="container-fluid">
     <hr>
     <div class="row">
         <div class="col-md-3">
-            <strong>Version:</strong>
-            <select ng-model="version" class="form-control">
-                <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-                <option ng-repeat="versionFile in versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+            <strong>Capabilities Version:</strong>
+            <select ng-model="ctrl.version" ng-change="ctrl.update()" class="form-control">
+                <!-- Slicing the version file name here gets rid of the '.json' file extension -->
+                <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <strong>Target Program:</strong>
-            <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
-            <select ng-model="target" class="form-control" ng-change="updateTargetCapabilities()">
+            <select ng-model="ctrl.target" class="form-control" ng-change="ctrl.update()">
                 <option value="platform">OpenStack Powered Platform</option>
                 <option value="compute">OpenStack Powered Compute</option>
                 <option value="object">OpenStack Powered Object Storage</option>
@@ -25,8 +24,8 @@
 </div>
 
 <br/>
-<div ng-show="data" class="clouds-table">
-    <table ng-show="data" class="table table-striped table-hover">
+<div ng-show="ctrl.data" class="clouds-table">
+    <table ng-show="ctrl.data" class="table table-striped table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -36,7 +35,7 @@
         </thead>
 
         <tbody>
-            <tr ng-repeat="cloud in data.results" id="tr{{cloud.id}}">
+            <tr ng-repeat="cloud in ctrl.data.results" id="tr{{cloud.id}}">
                 <td><a ui-sref="cloudDetail({cloud_id: cloud.id})">{{cloud.id}}</a></td>
                 <td>{{cloud.name}}</td>
                 <td>{{cloud.description}}</td>
@@ -46,13 +45,13 @@
 </div>
 
 
-<div cg-busy="{promise:authRequest,message:'Loading'}"></div>
-<div cg-busy="{promise:cloudsRequest,message:'Loading'}"></div>
-<div cg-busy="{promise:versionsRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.authRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.cloudsRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.versionsRequest,message:'Loading'}"></div>
 
-<div ng-show="showError" class="alert alert-danger" role="alert">
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
-    {{error}}
+    {{ctrl.error}}
 </div>
 

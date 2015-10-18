@@ -19,7 +19,7 @@
     angular
         .module('refstackApp', [
             'ui.router','ui.bootstrap', 'cgBusy',
-            'ngResource', 'angular-confirm', 'oi-file'
+            'ngResource', 'angular-confirm', 'oi.file'
         ]);
 
     angular
@@ -85,7 +85,7 @@
                 controller: 'ProfileController as ctrl'
             }).
             state('leaderBoard', {
-                url: '/leaderBoard',
+                url: '/leader_board',
                 templateUrl: '/components/leader-board/leaderBoard.html',
                 controller: 'LeaderBoardController as ctrl'
             }).

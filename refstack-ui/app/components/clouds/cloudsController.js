@@ -1,107 +1,131 @@
-var refstackApp = angular.module('refstackApp');
-
-/**
- * Refstack Clouds Controller
- * This controller is for the '/clouds' page where a user can browse
- * a listing of user registred clouds.
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-refstackApp.controller('cloudsController',
-    ['$scope', '$http', '$state', 'refstackApiUrl', 'raiseAlert',
-     function ($scope, $http, $state, refstackApiUrl, raiseAlert) {
-         'use strict';
 
-         $scope.currentPage = 1;
-         $scope.itemsPerPage = 20;
-         $scope.maxSize = 5;
-         $scope.name = '';
-         $scope.description = '';
-         $scope.config = '';
-         $scope.isConfigLoaded = '[No data]';
+(function () {
+    'use strict';
 
-         /**
-          * This will contact the Refstack API to get a listing of test run
-          * results.
-          */
-         $scope.update = function () {
-             $scope.showError = false;
-             // Construct the API URL based on user-specified filters.
-             var content_url = refstackApiUrl + '/clouds?page=' +
-                 $scope.currentPage;
-             $scope.cloudsRequest =
-                 $http.get(content_url).success(function (data) {
-                     $scope.data = data;
-                     $scope.totalItems = $scope.data.pagination.total_pages *
-                         $scope.itemsPerPage;
-                     $scope.currentPage = $scope.data.pagination.current_page;
-                 }).error(function (error) {
-                     $scope.data = null;
-                     $scope.totalItems = 0;
-                     $scope.showError = true;
-                     $scope.error =
-                         'Error retrieving clouds listing from server: ' +
-                         JSON.stringify(error);
-                 });
-         };
-         $scope.update();
+    angular
+        .module('refstackApp')
+        .controller('CloudsController', CloudsController);
 
-         $scope.configFile = {
-             change: function (f) {
-                 if (f.size > 1024*1024) {
-                     $scope.isConfigLoaded = '[Config is too big(more than 1Mb), please choose another one]';
-                     return;
-                 }
+    CloudsController.$inject = [
+        '$http', '$state', 'refstackApiUrl', 'raiseAlert'
+    ];
 
-                 var r = new FileReader();
-                 r.onloadend = function(e) {
-                     var data = e.target.result;
-                     $scope.config = data;
-                     $scope.isConfigLoaded = '[Config loaded]';
-                     $scope.$apply();
-                 };
-                 r.readAsText(f._file);
-             }
-         };
+    /**
+     * RefStack Clouds Controller
+     */
+    function CloudsController($http, $state, refstackApiUrl, raiseAlert) {
 
-         $scope.addCloud = function() {
-             if ($scope.config == '') {
-                 $scope.showError = true;
-                 $scope.error = 'Config is not loaded.';
-                 return;
-             }
+        var ctrl = this;
+        
+        ctrl.update = update;
+        ctrl.addCloud = addCloud;
+        ctrl.deleteCloud = deleteCloud;
 
-             var url = refstackApiUrl + '/clouds';
-             var data = {
-                 name: $scope.name,
-                 description: $scope.description,
-                 config: $scope.config
-             };
-             $http.post(url, data).success(function (data) {
-                 $scope.update();
-             }).error(function (error) {
-                 $scope.showError = true;
-                 $scope.error =
-                     'Error adding new cloud: ' +
-                     JSON.stringify(error);
-             });
+        ctrl.currentPage = 1;
+        ctrl.itemsPerPage = 20;
+        ctrl.maxSize = 5;
+        ctrl.name = '';
+        ctrl.description = '';
+        ctrl.config = '';
+        ctrl.isConfigLoaded = '[No data]';
 
-             $scope.name = '';
-             $scope.description = '';
-             $scope.config = '';
-             $scope.isConfigLoaded = '';
-             angular.element(document.querySelector('#configFile')).val(null);
-         };
+        /**
+         * This will contact the Refstack API to get a listing of test run
+         * results.
+         */
+        function update() {
+            ctrl.showError = false;
+            // Construct the API URL based on user-specified filters.
+            var content_url = refstackApiUrl + '/clouds?page=' +
+                ctrl.currentPage;
+            ctrl.cloudsRequest =
+                $http.get(content_url).success(function (data) {
+                    ctrl.data = data;
+                    ctrl.totalItems = ctrl.data.pagination.total_pages *
+                        ctrl.itemsPerPage;
+                    ctrl.currentPage = ctrl.data.pagination.current_page;
+                }).error(function (error) {
+                    ctrl.data = null;
+                    ctrl.totalItems = 0;
+                    ctrl.showError = true;
+                    ctrl.error =
+                        'Error retrieving clouds listing from server: ' +
+                        angular.toJson(error);
+                });
+        };
+        ctrl.update();
 
-         $scope.deleteCloud = function (cloud) {
-             var content_url = [
-                 refstackApiUrl, '/clouds/', cloud.cloud_id
-             ].join('');
-             $scope.deleteRequest =
-                 $http.delete(content_url).success(function () {
-                     $scope.update();
-                 }).error(function (error) {
-                     raiseAlert('danger',
-                         error.title, error.detail);
-                 });
-         };
-     }]
-);
+        ctrl.configFile = {
+            change: function (f) {
+                if (f.size > 1024*1024) {
+                    ctrl.isConfigLoaded = '[Config is too big(more than 1Mb), please choose another one]';
+                    return;
+                }
+
+                var r = new FileReader();
+                r.onloadend = function(e) {
+                    var data = e.target.result;
+                    ctrl.config = data;
+                    ctrl.isConfigLoaded = '[Config loaded]';
+                    ctrl.$apply();
+                };
+                r.readAsText(f._file);
+            }
+        };
+
+        function addCloud() {
+            if (ctrl.config == '') {
+                ctrl.showError = true;
+                ctrl.error = 'Config is not loaded.';
+                return;
+            }
+
+            var url = refstackApiUrl + '/clouds';
+            var data = {
+                name: ctrl.name,
+                description: ctrl.description,
+                config: ctrl.config
+            };
+            $http.post(url, data).success(function (data) {
+                ctrl.update();
+            }).error(function (error) {
+                ctrl.showError = true;
+                ctrl.error =
+                    'Error adding new cloud: ' +
+                    JSON.stringify(error);
+            });
+
+            ctrl.name = '';
+            ctrl.description = '';
+            ctrl.config = '';
+            ctrl.isConfigLoaded = '';
+            angular.element(document.querySelector('#configFile')).val(null);
+        };
+
+        function deleteCloud(cloud) {
+            var content_url = [
+                refstackApiUrl, '/clouds/', cloud.cloud_id
+            ].join('');
+            ctrl.deleteRequest =
+                $http.delete(content_url).success(function () {
+                    ctrl.update();
+                }).error(function (error) {
+                    raiseAlert('danger',
+                        error.title, error.detail);
+                });
+        };
+    }
+})();

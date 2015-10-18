@@ -1,7 +1,7 @@
 <h3>User clouds</h3>
 
-<div ng-show="data" class="clouds-table">
-    <table ng-show="data" class="table table-striped table-hover">
+<div ng-show="ctrl.data" class="clouds-table">
+    <table ng-show="ctrl.data" class="table table-striped table-hover">
         <thead>
             <tr>
                 <th>ID</th>
@@ -14,13 +14,13 @@
         </thead>
 
         <tbody>
-            <tr ng-repeat="cloud in data.results" id="tr{{cloud.id}}">
+            <tr ng-repeat="cloud in ctrl.data.results" id="tr{{cloud.id}}">
                 <td><a ui-sref="cloudDetail({cloud_id: cloud.id})">{{cloud.id}}</a></td>
                 <td>{{cloud.name}}</td>
                 <td>{{cloud.description}}</td>
                 <td>{{cloud.is_running ? "Running" : "Stopped"}}</td>
                 <td>
-                    <button type="submit" class="btn btn-primary btn-danger" ng-click="deleteCloud({cloud_id: cloud.id})"
+                    <button type="submit" class="btn btn-primary btn-danger" ng-click="ctrl.deleteCloud({cloud_id: cloud.id})"
                             confirm="All results from this cloud will be deleted also. Are you sure you want to delete this cloud?"><bold>X</bold></button>
                 </td>
                 <td><span ng-show="cloud.shared" class="glyphicon glyphicon-share"></span></td>
@@ -38,36 +38,36 @@
             <label for="cpid">Name</label>
             <p class="input-group">
                 <input type="text" class="form-control"
-                    ng-model="name" close-text="Close" />
+                    ng-model="ctrl.name" close-text="Close" />
             </p>
         </div>
         <div class="col-md-3">
             <label for="cpid">Description</label>
             <p class="input-group">
                 <input type="text" class="form-control"
-                    ng-model="description" close-text="Close" />
+                    ng-model="ctrl.description" close-text="Close" />
             </p>
         </div>
         <div class="col-md-3">
             <label for="cpid">Cloud config</label>
             <p class="input-group">
-                <input type="file" oi-file="configFile"/>
-                {{isConfigLoaded}}
+                <input type="file" oi-file="ctrl.configFile"/>
+                {{ctrl.isConfigLoaded}}
             </p>
         </div>
         <div class="col-md-3"style="margin-top:24px;">
-            <button type="submit" class="btn btn-primary" ng-click="addCloud()">Add Cloud</button>
+            <button type="submit" class="btn btn-primary" ng-click="ctrl.addCloud()">Add Cloud</button>
         </div>
     </div>
 </div>
 
 
-<div cg-busy="{promise:authRequest,message:'Loading'}"></div>
-<div cg-busy="{promise:cloudsRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.authRequest,message:'Loading'}"></div>
+<div cg-busy="{promise:ctrl.cloudsRequest,message:'Loading'}"></div>
 
-<div ng-show="showError" class="alert alert-danger" role="alert">
+<div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
     <span class="sr-only">Error:</span>
-    {{error}}
+    {{ctrl.error}}
 </div>
 
