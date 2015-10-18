@@ -402,3 +402,10 @@ def get_user_clouds(user_openid):
     session = get_session()
     clouds = session.query(models.Cloud).filter_by(openid=user_openid).all()
     return _to_dict(clouds)
+
+
+def get_shared_clouds():
+    """Get all shared clouds."""
+    session = get_session()
+    clouds = session.query(models.Cloud).filter_by(shared=True).all()
+    return _to_dict(clouds)

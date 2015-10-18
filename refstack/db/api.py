@@ -187,3 +187,8 @@ def get_cloud_config(cloud_id):
 def get_user_clouds(user_openid):
     """Get clouds for specified user."""
     return IMPL.get_user_clouds(user_openid)
+
+
+def get_shared_clouds():
+    """Get all shared clouds."""
+    return IMPL.get_shared_clouds()

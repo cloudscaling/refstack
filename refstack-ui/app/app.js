@@ -61,6 +61,11 @@ refstackApp.config([
                 templateUrl: '/components/profile/profile.html',
                 controller: 'profileController'
             }).
+            state('leaderBoard', {
+                url: '/leaderBoard',
+                templateUrl: '/components/leader-board/leaderBoard.html',
+                controller: 'leaderBoardController'
+            }).
             state('authFailure', {
                 url: '/auth_failure/:message',
                 templateUrl: '/components/home/home.html',
