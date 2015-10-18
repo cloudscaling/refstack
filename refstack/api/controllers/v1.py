@@ -24,7 +24,6 @@ from refstack.api.controllers import user
 
 
 class V1Controller(object):
-
     """Version 1 API controller root."""
 
     results = results.ResultsController()

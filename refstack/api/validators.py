@@ -47,7 +47,6 @@ def checker_uuid(inst):
 
 
 class BaseValidator(object):
-
     """Base class for validators."""
 
     schema = {}
@@ -75,7 +74,6 @@ class BaseValidator(object):
 
 
 class TestResultValidator(BaseValidator):
-
     """Validator for incoming test results."""
 
     schema = {
@@ -123,6 +121,16 @@ class TestResultValidator(BaseValidator):
             data_hash.update(request.body.encode('utf-8'))
             if not signer.verify(data_hash, sign):
                 raise api_exc.ValidationError('Signature verification failed')
+        if self._is_empty_result(request):
+            raise api_exc.ValidationError('Uploaded results must contain at '
+                                          'least one passing test.')
+
+    def _is_empty_result(self, request):
+        """Check if the test results list is empty."""
+        body = json.loads(request.body)
+        if len(body['results']) != 0:
+            return False
+        return True
 
     @staticmethod
     def assert_id(_id):
@@ -131,7 +139,6 @@ class TestResultValidator(BaseValidator):
 
 
 class PubkeyValidator(BaseValidator):
-
     """Validator for uploaded public pubkeys."""
 
     schema = {

@@ -37,16 +37,16 @@ PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             os.pardir)
 UI_OPTS = [
     cfg.StrOpt('ui_url',
-               default='http://refstack.net',
-               help='Url of user interface for Refstack. Need for redirects '
+               default='https://refstack.openstack.org',
+               help='Url of user interface for RefStack. Need for redirects '
                     'after sign in and sign out.'
                ),
 ]
 
 API_OPTS = [
     cfg.StrOpt('api_url',
-               default='http://refstack.net',
-               help='Url of public Refstack API.'
+               default='https://refstack.openstack.org/api',
+               help='Url of public RefStack API.'
                ),
     cfg.StrOpt('static_root',
                default='refstack-ui/app',
@@ -114,7 +114,6 @@ log.register_options(CONF)
 
 
 class JSONErrorHook(pecan.hooks.PecanHook):
-
     """A pecan hook that translates webob HTTP errors into a JSON format."""
 
     def __init__(self):
@@ -157,7 +156,6 @@ class JSONErrorHook(pecan.hooks.PecanHook):
 
 
 class CORSHook(pecan.hooks.PecanHook):
-
     """A pecan hook that handles Cross-Origin Resource Sharing."""
 
     def __init__(self):
@@ -218,7 +216,8 @@ def setup_app(config):
 
     beaker_conf = {
         'session.key': 'refstack',
-        'session.type': 'memory',
+        'session.type': 'ext:database',
+        'session.url': CONF.database.connection,
         'session.timeout': 604800,
         'session.validate_key': api_utils.get_token(),
     }

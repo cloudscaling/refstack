@@ -36,6 +36,13 @@ FAKE_TESTS_RESULT = {
     ]
 }
 
+FAKE_JSON_WITH_EMPTY_RESULTS = {
+    'cpid': 'foo',
+    'duration_seconds': 20,
+    'results': [
+    ]
+}
+
 
 class TestResultsController(api.FunctionalTest):
     """Test case for ResultsController."""
@@ -57,6 +64,14 @@ class TestResultsController(api.FunctionalTest):
         except ValueError:
             self.fail("actual_response doesn't contain test_id")
 
+    def test_post_with_empty_result(self):
+        """Test results endpoint with empty test results request."""
+        results = json.dumps(FAKE_JSON_WITH_EMPTY_RESULTS)
+        self.assertRaises(webtest.app.AppError,
+                          self.post_json,
+                          self.URL,
+                          params=results)
+
     def test_post_with_invalid_schema(self):
         """Test post request with invalid schema."""
         results = json.dumps({
@@ -73,8 +88,8 @@ class TestResultsController(api.FunctionalTest):
         results = json.dumps(FAKE_TESTS_RESULT)
         post_response = self.post_json(self.URL, params=results)
         get_response = self.get_json(self.URL + post_response.get('test_id'))
-        self.assertEqual(FAKE_TESTS_RESULT['cpid'],
-                         get_response['cpid'])
+        # CPID is only exposed to the owner.
+        self.assertNotIn('cpid', get_response)
         self.assertEqual(FAKE_TESTS_RESULT['duration_seconds'],
                          get_response['duration_seconds'])
         for test in FAKE_TESTS_RESULT['results']:
