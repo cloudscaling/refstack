@@ -34,6 +34,7 @@
 
         ctrl.getVersionList = getVersionList;
         ctrl.update = update;
+        ctrl.coefToStyle = coefToStyle;
 
         ctrl.currentPage = 1;
         ctrl.itemsPerPage = 20;
@@ -85,6 +86,16 @@
                         'Error retrieving clouds listing from server: ' +
                         JSON.stringify(error);
                 });
+        }
+
+        function coefToStyle(coef) {
+            if (Number(coef) !== coef)
+                return ''; // parent color
+            if (coef < 50)
+                return '#FF3300'; // red
+            if (coef < 70)
+                return '#FFFF99'; // yellow
+            return '#33CC33'; // green
         }
     }
 })();

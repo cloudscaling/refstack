@@ -52,7 +52,7 @@ class LeaderBoardController(rest.RestController):
         clouds = db.get_shared_clouds()
         for cloud in clouds:
             if ref_tests_count == 0:
-                cloud.update({'coef': -1})
+                cloud.update({'coef': 'N/A'})
                 continue
             tests = db.get_cloud_last_results(cloud['id'])
             tests_count = 0

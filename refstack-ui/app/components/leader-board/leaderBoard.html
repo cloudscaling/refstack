@@ -40,7 +40,7 @@
                 <td><a ui-sref="cloudDetail({cloud_id: cloud.id})">{{cloud.id}}</a></td>
                 <td>{{cloud.name}}</td>
                 <td>{{cloud.description}}</td>
-                <td>{{cloud.coef}}</td>
+                <td bgcolor="{{ctrl.coefToStyle(cloud.coef);}}">{{cloud.coef}}</td>
             </tr>
         </tbody>
     </table>
