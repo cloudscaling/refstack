@@ -5,14 +5,14 @@
         <div class="pull-left">
             <div class="test-report">
                 <strong>Test ID:</strong> {{ctrl.testId}}<br />
-                <div ng-if="ctrl.isEditingAllowed()"><strong>Cloud ID:</strong> <a ui-sref="cloudDetail({cloud_id: ctrl.resultsData.cpid})">{{ctrl.resultsData.cpid}}</a><br /></div>
+                <div ng-if="ctrl.isCloudShared()"><strong>Cloud ID:</strong> <a ui-sref="cloudDetail({cloud_id: ctrl.resultsData.cpid})">{{ctrl.resultsData.cpid}}</a><br /></div>
                 <strong>Upload Date:</strong> {{ctrl.resultsData.created_at}} UTC<br />
                 <strong>Duration:</strong> {{ctrl.resultsData.duration_seconds}} seconds<br />
                 <strong>Total Number of Passed Tests:</strong>
                 <a title="See all passed tests" ng-click="ctrl.openFullTestListModal()">
                     {{ctrl.resultsData.results.length}}
                 </a><br />
-                <div ng-if="isKnownCloud()">
+                <div ng-if="ctrl.isKnownCloud()">
                     <strong>Cloud name:</strong> {{ctrl.resultsData.cloud_name}}<br />
                     <strong>Cloud description:</strong> {{ctrl.resultsData.cloud_description}}<br />
                 </div>

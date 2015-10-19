@@ -58,6 +58,12 @@ def _check_cloud_owner(cloud_id):
         raise exc.HTTPUnauthorized('Only owner can do it with the cloud.')
 
 
+def _check_cloud_viewable(cloud_id):
+    cloud = db.get_cloud(cloud_id)
+    if cloud['openid'] != api_utils.get_user_id() and not cloud['shared']:
+        raise exc.HTTPUnauthorized('You can not view this cloud.')
+
+
 def _get_pid(cloud_id):
     try:
         output = os.popen("ps ax | grep 'cloud-%s/run' | "
@@ -218,6 +224,8 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     @pecan.expose('json')
     def get_one(self, cloud_id):
         """Get information about cloud."""
+        _check_cloud_viewable(cloud_id)
+
         cloud = db.get_cloud(cloud_id)
         pid = _get_pid(cloud['id'])
         cloud['is_running'] = True if pid else False

@@ -91,7 +91,8 @@ class ResultsController(validation.BaseRestControllerWithValidation):
         cloud = db.get_cloud(cloud_id)
         if cloud:
             test_info.update({'cloud_name': cloud['name'],
-                              'cloud_description': cloud['description']})
+                              'cloud_description': cloud['description'],
+                              'cloud_shared': cloud['shared']})
 
         return test_info
 

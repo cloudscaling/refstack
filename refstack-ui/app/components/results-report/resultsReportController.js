@@ -52,6 +52,8 @@
         ctrl.getCapabilityTestCount = getCapabilityTestCount;
         ctrl.getStatusTestCount = getStatusTestCount;
         ctrl.openFullTestListModal = openFullTestListModal;
+        ctrl.isKnownCloud = isKnownCloud;
+        ctrl.isCloudShared = isCloudShared;
 
         /** The testID extracted from the URL route. */
         ctrl.testId = $stateParams.testID;
@@ -144,6 +146,10 @@
             return Boolean(ctrl.resultsData &&
                 ctrl.resultsData.cloud_name != null &&
                 ctrl.resultsData.cloud_name != '');
+        };
+        function isCloudShared() {
+            return Boolean(ctrl.resultsData &&
+                ctrl.resultsData.cloud_shared);
         };
 
         /**
