@@ -58,6 +58,18 @@ def _check_cloud_owner(cloud_id):
         raise exc.HTTPUnauthorized('Only owner can do it with the cloud.')
 
 
+def _get_pid(cloud_id):
+    try:
+        output = os.popen("ps ax | grep 'cloud-%s/run' | "
+                          "grep -v 'grep'" % cloud_id).read()
+        pid = output.split()[0]
+        LOG.debug("Cloud(%s) runs tests. PID = %s" % (cloud_id, pid))
+        return pid
+    except Exception:
+        pass
+    return None
+
+
 class CloudConfigController(rest.RestController):
 
     """/v1/clouds/cloud_id/config handler."""
@@ -85,6 +97,9 @@ class CloudConfigController(rest.RestController):
         pecan.response.status = 201
 
 
+ffff = True
+
+
 class CloudLastlogController(rest.RestController):
 
     """/v1/clouds/cloud_id/lastlog handler."""
@@ -98,6 +113,10 @@ class CloudLastlogController(rest.RestController):
 
         _check_cloud_owner(cloud_id)
 
+        result = {
+            'data': 'Could not find log file',
+            'partial': False
+        }
         try:
             ftime = None
             log_file = None
@@ -114,15 +133,20 @@ class CloudLastlogController(rest.RestController):
                 with open(log_file, 'r') as f:
                     content = f.read()
                 if not line_count or line_count >= content.count('\n'):
-                    return {'data': content, 'partial': False}
-
-                content = content.splitlines()[-line_count:]
-                content = '...\n' + '\n'.join(content)
-                return {'data': content, 'partial': True}
+                    result['data'] = content
+                    result['partial'] = False
+                else:
+                    content = content.splitlines()[-line_count:]
+                    content = '...\n' + '\n'.join(content)
+                    result['data'] = content
+                    result['partial'] = True
         except Exception:
             LOG.exception("Couldn't read log file")
 
-        return {'data': 'Could not find log file', 'partial': False}
+        pid = _get_pid(cloud_id)
+        result['isRunning'] = True if pid else False
+
+        return result
 
 
 class CloudShareController(rest.RestController):
@@ -181,7 +205,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
         openid = api_utils.get_user_id()
         results = db.get_user_clouds(openid)
         for result in results:
-            pid = self._get_pid(result['id'])
+            pid = _get_pid(result['id'])
             result.update({'is_running': True if pid else False})
 
         # TODO: add paging
@@ -198,7 +222,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     def get_one(self, cloud_id):
         """Get information about cloud."""
         cloud = db.get_cloud(cloud_id)
-        pid = self._get_pid(cloud['id'])
+        pid = _get_pid(cloud['id'])
         cloud['is_running'] = True if pid else False
         openid = api_utils.get_user_id()
         cloud['can_edit'] = openid == cloud['openid']
@@ -222,7 +246,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
         _check_cloud_owner(cloud_id)
 
-        if self._get_pid(cloud_id):
+        if _get_pid(cloud_id):
             raise api_exc.ValidationError(
                 'Cloud tests already run.')
 
@@ -298,9 +322,6 @@ class CloudsController(validation.BaseRestControllerWithValidation):
                     LOG.exception(str(cv['tests']))
                     raise
 
-            # temporary hack
-            tests = [t for t in tests if 'regions' in t]
-
             test_list_file = os.path.join(dir_path, 'test-list-%s' % run_time)
             LOG.error('Tests list file: ' + test_list_file)
             with open(test_list_file, 'w') as f:
@@ -333,16 +354,5 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
         _check_cloud_owner(cloud_id)
 
-        pid = self._get_pid(cloud_id)
+        pid = _get_pid(cloud_id)
         os.kill(-int(pid), signal.SIGKILL)
-
-    def _get_pid(self, cloud_id):
-        try:
-            output = os.popen("ps ax | grep 'cloud-%s/run' | "
-                              "grep -v 'grep'" % cloud_id).read()
-            pid = output.split()[0]
-            LOG.debug("Cloud(%s) runs tests. PID = %s" % (cloud_id, pid))
-            return pid
-        except Exception:
-            pass
-        return None

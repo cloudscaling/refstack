@@ -16,13 +16,13 @@
 
     angular.module('refstackApp').controller('CloudDataController', CloudDataController);
 
-    CloudDataController.$inject = ['$http', '$state', '$stateParams', 'refstackApiUrl', 'raiseAlert'];
+    CloudDataController.$inject = ['$interval', '$http', '$stateParams', 'refstackApiUrl', 'raiseAlert'];
 
     /**
      * Refstack Cloud Data Controller
      * This controller is for viewing large deatils of the Cloud.
      */
-    function CloudDataController($http, $state, $stateParams, refstackApiUrl, raiseAlert) {
+    function CloudDataController($interval, $http, $stateParams, refstackApiUrl, raiseAlert) {
 
         var ctrl = this;
 
@@ -30,23 +30,44 @@
 
         ctrl.cloud_id = $stateParams.cloud_id;
         ctrl.data_type = $stateParams.data_type;
+        ctrl.partial = $stateParams.partial;
 
         ctrl.data = '';
         ctrl.needFullLink = false;
+        ctrl.reloadTimer = null;
+        ctrl.indicatorTimer = null;
+        ctrl.indicator = '';
 
-        function getCloudData(partial) {
+        function getCloudData() {
             var url = refstackApiUrl + "/clouds/"
                       + ctrl.cloud_id + "/"
                       + ctrl.data_type 
-                      + "?line_count=" + (partial ? 50 : 0);
+                      + "?line_count=" + (ctrl.partial ? 20 : 0);
             $http.get(url).success(function (data) {
                 ctrl.data = data.data;
                 ctrl.needFullLink = data.partial ? true : false;
+                if (ctrl.reloadTimer == null && data.isRunning) {
+                    ctrl.reloadTimer = $interval(function() {
+                        ctrl.getCloudData();
+                    }.bind(ctrl), 10000);
+                } else if (ctrl.reloadTimer != null && !data.isRunning) {
+                    $interval.cancel(ctrl.reloadTimer);
+                }
+                if (ctrl.indicatorTimer == null && data.isRunning) {
+                    ctrl.indicatorTimer = $interval(function() {
+                        ctrl.indicator = ctrl.indicator + '*';
+                        if (ctrl.indicator.length > 4)
+                            ctrl.indicator = '';
+                    }.bind(ctrl), 500);
+                } else if (ctrl.indicatorTimer != null && !data.isRunning) {
+                    $interval.cancel(ctrl.indicatorTimer);
+                    ctrl.indicator = '';
+                }
             }).error(function (error) {
                 raiseAlert('danger',
                     error.title, error.detail);
             });
         };
-        ctrl.getCloudData($stateParams.partial);
+        ctrl.getCloudData();
     }
 })();
