@@ -192,3 +192,7 @@ def get_user_clouds(user_openid):
 def get_shared_clouds():
     """Get all shared clouds."""
     return IMPL.get_shared_clouds()
+
+
+def get_cloud_last_results(cloud_id):
+    return IMPL.get_cloud_last_results(cloud_id)

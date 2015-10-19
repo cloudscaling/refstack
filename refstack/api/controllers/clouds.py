@@ -28,12 +28,12 @@ from oslo_log import log
 import pecan
 from pecan import rest
 from pecan.secure import secure
-import requests
 from webob import exc
 
 from refstack import db
 from refstack.api import utils as api_utils
 from refstack.api import validators
+from refstack.api.controllers import caps_utils
 from refstack.api.controllers import validation
 from refstack.api import exceptions as api_exc
 
@@ -95,9 +95,6 @@ class CloudConfigController(rest.RestController):
         db.update_cloud(cloud)
 
         pecan.response.status = 201
-
-
-ffff = True
 
 
 class CloudLastlogController(rest.RestController):
@@ -272,55 +269,10 @@ class CloudsController(validation.BaseRestControllerWithValidation):
                 f.write(config)
 
             # prepare tests list and store it in file
-            # TODO: commonize it with code in capabilities
-            # 1. load list from github
-            github_url = ''.join((CONF.api.github_raw_base_url.rstrip('/'),
-                                  '/', version))
-            try:
-                response = requests.get(github_url)
-                LOG.debug("Response Status: %s / Used Requests Cache: %s" %
-                          (response.status_code,
-                           getattr(response, 'from_cache', False)))
-                if response.status_code == 200:
-                    full_list = response.json()
-                else:
-                    LOG.warning('Github returned non-success HTTP '
-                                'code: %s' % response.status_code)
-                    pecan.abort(response.status_code)
-            except requests.exceptions.RequestException as e:
-                LOG.warning('An error occurred trying to get GitHub '
-                            'capability file contents: %s' % e)
-                pecan.abort(500)
-            # 2. filter tests by target
-            targets = set()
-            if target != 'platform':
-                targets.add(target)
-            else:
-                p = full_list['platform']
-                targets = set().union(p['required']).union(p['advisory'])
-            components = full_list['components']
-            caps = set()
-            for c in components:
-                if c not in targets:
-                    continue
-                cv = components[c]
-                caps = caps.union(cv['required']).union(cv['advisory'])
-            json_caps = full_list['capabilities']
-            tests = set()
-            for json_cap in json_caps:
-                if json_cap not in caps:
-                    continue
-                cv = json_caps[json_cap]
-                try:
-                    for test in cv['tests']:
-                        test_prop = cv['tests'][test]
-                        test_name = test
-                        if 'idempotent_id' in test_prop:
-                            test_name += '[' + test_prop['idempotent_id'] + ']'
-                        tests.add(test_name)
-                except AttributeError:
-                    LOG.exception(str(cv['tests']))
-                    raise
+            tests = caps_utils.get_capability_tests(version, target)
+
+            # temporary hack
+            tests = [t for t in tests if 'regions' in t]
 
             test_list_file = os.path.join(dir_path, 'test-list-%s' % run_time)
             LOG.error('Tests list file: ' + test_list_file)

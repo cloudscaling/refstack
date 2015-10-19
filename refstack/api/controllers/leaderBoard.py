@@ -20,6 +20,7 @@ from oslo_log import log
 import pecan
 from pecan import rest
 
+from refstack.api.controllers import caps_utils
 from refstack.api import exceptions as api_exc
 from refstack.api import utils as api_utils
 from refstack import db
@@ -44,11 +45,27 @@ class LeaderBoardController(rest.RestController):
             raise api_exc.ValidationError(
                 'Target parameters can not be null.')
 
-        results = db.get_shared_clouds()
+        ref_tests = caps_utils.get_capability_tests(params['version'],
+                                                    params['target'])
+        ref_tests_count = len(ref_tests)
+        LOG.debug("All tests count: %s" % float(len(ref_tests)))
+        clouds = db.get_shared_clouds()
+        for cloud in clouds:
+            if ref_tests_count == 0:
+                cloud.update({'coef': -1})
+                continue
+            tests = db.get_cloud_last_results(cloud['id'])
+            tests_count = 0
+            for test in tests:
+                if test['name'] in ref_tests:
+                    tests_count += 1
+            LOG.debug("Passed tests count: %s" % len(tests))
+            coef = int(100 * tests_count / float(ref_tests_count))
+            cloud.update({'coef': coef})
 
         # TODO: add paging
 
-        page = {'results': results,
+        page = {'results': clouds,
                 'pagination': {
                     'current_page': 1,
                     'total_pages': 1

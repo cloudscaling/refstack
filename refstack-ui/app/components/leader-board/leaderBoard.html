@@ -31,6 +31,7 @@
                 <th>ID</th>
                 <th>Cloud name</th>
                 <th>Description</th>
+                <th>Percent</th>
             </tr>
         </thead>
 
@@ -39,6 +40,7 @@
                 <td><a ui-sref="cloudDetail({cloud_id: cloud.id})">{{cloud.id}}</a></td>
                 <td>{{cloud.name}}</td>
                 <td>{{cloud.description}}</td>
+                <td>{{cloud.coef}}</td>
             </tr>
         </tbody>
     </table>

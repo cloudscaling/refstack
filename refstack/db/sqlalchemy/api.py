@@ -24,6 +24,7 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session as db_session
 import six
+from sqlalchemy import func
 
 from refstack.api import constants as api_const
 from refstack.db.sqlalchemy import models
@@ -407,3 +408,17 @@ def get_shared_clouds():
     session = get_session()
     clouds = session.query(models.Cloud).filter_by(shared=True).all()
     return _to_dict(clouds)
+
+
+def get_cloud_last_results(cloud_id):
+    session = get_session()
+    test_id = (session
+        .query(models.Test.id)
+        .filter_by(created_at=session.query(func.max(models.Test.created_at))
+                                     .filter_by(cpid=cloud_id)
+                                     .first()[0])
+        .first())[0]
+    results = (session.query(models.TestResults.name)
+                      .filter_by(test_id=test_id)
+                      .all())
+    return _to_dict(results)

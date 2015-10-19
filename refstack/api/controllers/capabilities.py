@@ -23,6 +23,8 @@ import re
 import requests
 import requests_cache
 
+from refstack.api.controllers import caps_utils
+
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
@@ -67,20 +69,4 @@ class CapabilitiesController(rest.RestController):
     @pecan.expose('json')
     def get_one(self, file_name):
         """Handler for getting contents of specific capability file."""
-        github_url = ''.join((CONF.api.github_raw_base_url.rstrip('/'),
-                              '/', file_name, ".json"))
-        try:
-            response = requests.get(github_url)
-            LOG.debug("Response Status: %s / Used Requests Cache: %s" %
-                      (response.status_code,
-                       getattr(response, 'from_cache', False)))
-            if response.status_code == 200:
-                return response.json()
-            else:
-                LOG.warning('Github returned non-success HTTP '
-                            'code: %s' % response.status_code)
-                pecan.abort(response.status_code)
-        except requests.exceptions.RequestException as e:
-            LOG.warning('An error occurred trying to get GitHub '
-                        'capability file contents: %s' % e)
-            pecan.abort(500)
+        return caps_utils.get_capability(file_name + '.json')
