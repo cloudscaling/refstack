@@ -280,7 +280,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
             tests = caps_utils.get_capability_tests(version, target)
 
             # temporary hack
-            tests = [t for t in tests if 'regions' in t]
+            # tests = [t for t in tests if 'regions' in t]
 
             test_list_file = os.path.join(dir_path, 'test-list-%s' % run_time)
             LOG.error('Tests list file: ' + test_list_file)
