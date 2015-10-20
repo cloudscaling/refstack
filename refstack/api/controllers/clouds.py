@@ -86,8 +86,18 @@ class CloudConfigController(rest.RestController):
         """..."""
         _check_cloud_owner(cloud_id)
 
-        config = db.get_cloud_config(cloud_id)
-        return {'data': config, 'partial': False}
+        strings_to_obfuscate = ['aws_access', 'aws_secret', 'password',
+                                'alt_password', 'admin_password']
+
+        config = db.get_cloud_config(cloud_id).split('\n')
+        new_config = list()
+        for line in config:
+            key = line.split('=')[0]
+            if key.lower().strip() in strings_to_obfuscate:
+                line = key + '= *****'
+            new_config.append(line)
+
+        return {'data': '\n'.join(new_config), 'partial': False}
 
     @secure(api_utils.is_authenticated)
     @pecan.expose('json', method='PUT')
