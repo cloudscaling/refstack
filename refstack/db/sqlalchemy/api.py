@@ -413,11 +413,15 @@ def get_shared_clouds():
 
 def get_cloud_last_results(cloud_id):
     session = get_session()
+    last_result = (session.query(func.max(models.Test.created_at))
+                          .filter_by(cpid=cloud_id)
+                          .first())
+    if not last_result or not last_result[0]:
+        return []
+
     test_id = (session
         .query(models.Test.id)
-        .filter_by(created_at=session.query(func.max(models.Test.created_at))
-                                     .filter_by(cpid=cloud_id)
-                                     .first()[0])
+        .filter_by(created_at=last_result[0])
         .first())[0]
     results = (session.query(models.TestResults.name)
                       .filter_by(test_id=test_id)
