@@ -417,7 +417,7 @@ def get_cloud_last_results(cloud_id):
                           .filter_by(cpid=cloud_id)
                           .first())
     if not last_result or not last_result[0]:
-        return []
+        return {'tests': [], 'date': None}
 
     test_id = (session
         .query(models.Test.id)
@@ -426,4 +426,4 @@ def get_cloud_last_results(cloud_id):
     results = (session.query(models.TestResults.name)
                       .filter_by(test_id=test_id)
                       .all())
-    return _to_dict(results)
+    return {'tests': _to_dict(results), 'date': last_result[0]}

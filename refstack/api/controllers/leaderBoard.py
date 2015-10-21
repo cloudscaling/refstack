@@ -54,14 +54,16 @@ class LeaderBoardController(rest.RestController):
             if ref_tests_count == 0:
                 cloud.update({'coef': 'N/A'})
                 continue
-            tests = db.get_cloud_last_results(cloud['id'])
+            result = db.get_cloud_last_results(cloud['id'])
+            tests = result['tests']
             tests_count = 0
             for test in tests:
                 if test['name'] in ref_tests:
                     tests_count += 1
             LOG.debug("Passed tests count: %s" % len(tests))
             coef = int(100 * tests_count / float(ref_tests_count))
-            cloud.update({'coef': coef})
+            cloud.update({'coef': coef,
+                          'last_result_date': str(result['date'])})
 
         # TODO: add paging
 
