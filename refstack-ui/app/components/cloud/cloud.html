@@ -43,25 +43,36 @@
 <!-- Capability Filters & Run -->
 <div class="container-fluid" ng-show="ctrl.isEditingAllowed()">
     <hr>
-    <div class="row" ng-show="ctrl.isEditingAllowed()" id="brun" ng-style="ctrl.cloudDetail.is_running ? {'display': 'none'} : {}">
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary" ng-click="ctrl.run({cloud_id: cloud_id})">Run with:</button>
+    <div ng-show="ctrl.isEditingAllowed()" id="brun" ng-style="ctrl.cloudDetail.is_running ? {'display': 'none'} : {}">
+        <div class="row">
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary" ng-click="ctrl.run({cloud_id: cloud_id})">Run with:</button>
+            </div>
+            <div class="col-md-3">
+                <strong>Version:</strong>
+                <select ng-model="ctrl.version" class="form-control">
+                    <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
+                    <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <strong>Target Program:</strong>
+                <select ng-model="ctrl.target" class="form-control" ng-change="updateTargetCapabilities()">
+                    <option value="platform">OpenStack Powered Platform</option>
+                    <option value="compute">OpenStack Powered Compute</option>
+                    <option value="object">OpenStack Powered Object Storage</option>
+                    <option value="aws">Amazon EC2</option>
+                </select>
+            </div>
         </div>
-        <div class="col-md-3">
-            <strong>Version:</strong>
-            <select ng-model="ctrl.version" class="form-control">
-                <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-                <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <strong>Target Program:</strong>
-            <select ng-model="ctrl.target" class="form-control" ng-change="updateTargetCapabilities()">
-                <option value="platform">OpenStack Powered Platform</option>
-                <option value="compute">OpenStack Powered Compute</option>
-                <option value="object">OpenStack Powered Object Storage</option>
-                <option value="aws">Amazon EC2</option>
-            </select>
+        <br>
+        <div class="row">
+            <div class="col-md-2">
+                <strong>Additional config items:</strong>
+            </div>
+            <div class="col-md-9">
+                <textarea class="col-md-9" rows=7 ng-model="ctrl.add_config"></textarea>
+            </div>
         </div>
     </div>
     <div class="row" ng-show="ctrl.isEditingAllowed()" id="bstop" ng-style="ctrl.cloudDetail.is_running ? {} : {'display': 'none'}">

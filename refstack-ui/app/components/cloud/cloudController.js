@@ -46,6 +46,8 @@
         ctrl.target = 'platform';
         /** The schema version of the currently selected capabilities data. */
         ctrl.version = null;
+        /** Additional config lines. For example with passwords that is not stored on server. */
+        ctrl.add_config = '';
 
         /** TODO: commonize it with other instances of this method */
         function getVersionList() {
@@ -122,8 +124,11 @@
             var brun = angular.element(document.querySelector('#brun'));
             var bstop = angular.element(document.querySelector('#bstop'));
             brun.css('display', 'none');
-            var url = [refstackApiUrl, '/clouds/run', '?cloud_id=' + ctrl.cloud_id, '&version=' + ctrl.version, '&target=' + ctrl.target].join('');
-            $http.get(url).success(function() {
+            var url = [refstackApiUrl, '/clouds/run', '?cloud_id=' + ctrl.cloud_id].join('');
+            var params = {'version': ctrl.version,
+                          'target': ctrl.target,
+                          'config': ctrl.add_config};
+            $http.post(url, params).success(function() {
                 raiseAlert('success', '', 'Tests were run!');
                 bstop.css('display', '');
             }).error(function(error) {
@@ -137,7 +142,7 @@
             var bstop = angular.element(document.querySelector('#bstop'));
             bstop.css('display', 'none');
             var url = [refstackApiUrl, '/clouds/stop', '?cloud_id=' + ctrl.cloud_id].join('');
-            $http.get(url).success(function() {
+            $http.post(url).success(function() {
                 raiseAlert('success', '', 'Job is stopping. Please reload page.');
             }).error(function(error) {
                 raiseAlert('danger', error.title, error.detail);

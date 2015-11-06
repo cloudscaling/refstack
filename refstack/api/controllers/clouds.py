@@ -15,6 +15,7 @@
 
 """Test clouds controller."""
 
+import json
 import os
 import re
 import shutil
@@ -189,8 +190,8 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     __validator__ = validators.CloudValidator
 
     _custom_actions = {
-        "run": ["GET"],
-        "stop": ["GET"],
+        "run": ["POST"],
+        "stop": ["POST"],
     }
 
     @secure(api_utils.is_authenticated)
@@ -246,11 +247,13 @@ class CloudsController(validation.BaseRestControllerWithValidation):
     @secure(api_utils.is_authenticated)
     @pecan.expose('json')
     def run(self):
-        params = _get_params(['cloud_id', 'version', 'target'])
+        params = _get_params(['cloud_id'])
         LOG.debug('Params for run: ' + str(params))
         cloud_id = params[0]
-        version = params[1]
-        target = params[2]
+        body = json.loads(pecan.request.body)
+        version = body['version']
+        target = body['target']
+        config_add = body['config']
 
         LOG.debug("cloudId = " + str(cloud_id))
         # check existense
@@ -281,6 +284,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
             # store config to temp file
             config = db.get_cloud_config(cloud_id)
+            config = self._merge_configs(config, config_add)
             cfg_file = os.path.join(dir_path, 'tempest.conf')
             LOG.debug('Config file: ' + cfg_file)
             with open(cfg_file, 'w') as f:
@@ -326,3 +330,17 @@ class CloudsController(validation.BaseRestControllerWithValidation):
 
         pid = _get_pid(cloud_id)
         os.kill(-int(pid), signal.SIGKILL)
+
+    def _merge_configs(self, config, config_add):
+        config_add_lines = [cl for cl in config_add.split('\n') if cl]
+        if not config_add_lines:
+            return config
+
+        config_lines = config.split('\n')
+        # if this is not a section then add DEFAULT first
+        if config_add_lines[0].strip()[0] != '[':
+            config_lines.append('[DEFAULT]')
+        for cl in config_add_lines:
+            config_lines.append(cl)
+
+        return '\n'.join(config_lines)
