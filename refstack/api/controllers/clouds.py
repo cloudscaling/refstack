@@ -277,7 +277,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
             dir_path = os.path.join(tempfile.gettempdir(), 'cloud-' + cloud_id)
             if os.path.exists(dir_path):
                 shutil.rmtree(dir_path)
-            os.makedirs(dir_path)
+            os.makedirs(dir_path, 0700)
 
             run_time = time.time()
             log_file = os.path.join(dir_path, 'output-%s.log' % run_time)
@@ -289,6 +289,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
             LOG.debug('Config file: ' + cfg_file)
             with open(cfg_file, 'w') as f:
                 f.write(config)
+            os.chmod(cfg_file, 0400)
 
             # prepare tests list and store it in file
             tests = caps_utils.get_capability_tests(version, target)
@@ -300,6 +301,7 @@ class CloudsController(validation.BaseRestControllerWithValidation):
             LOG.error('Tests list file: ' + test_list_file)
             with open(test_list_file, 'w') as f:
                 f.write('\n'.join(sorted(tests)))
+            os.chmod(test_list_file, 0400)
 
             # run external process
             script_file = os.path.join(dir_path, 'run%s.sh' % run_time)
@@ -312,6 +314,8 @@ class CloudsController(validation.BaseRestControllerWithValidation):
                     '--cpid %s -- --load-list=%s >%s 2>&1\n' % (
                     CONF.api.api_url, cfg_file, cloud_id, test_list_file,
                     log_file))
+                f.write('rm -f %s\n' % cfg_file)
+            os.chmod(script_file, 0400)
 
             subprocess.Popen(['setsid', '/bin/bash', '-C', script_file])
         except Exception:
