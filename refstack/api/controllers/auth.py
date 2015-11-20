@@ -33,6 +33,10 @@ OPENID_OPTS = [
                default='https://openstackid.org/accounts/openid2',
                help='OpenStackID Auth Server URI.'
                ),
+    cfg.StrOpt('openid_logout_endpoint',
+               default='https://openstackid.org/accounts/user/logout',
+               help='OpenStackID logout URI.'
+               ),
     cfg.StrOpt('openid_mode',
                default='checkid_setup',
                help='Interaction mode. Specifies whether Openstack Id '
@@ -101,8 +105,12 @@ class AuthController(rest.RestController):
     }
 
     def _auth_failure(self, message):
-        pecan.redirect(parse.urljoin(CONF.ui_url,
-                                     '/#/auth_failure/%s') % message)
+        params = {
+            'message': message
+        }
+        url = parse.urljoin(CONF.ui_url,
+                            '/#/auth_failure?' + parse.urlencode(params))
+        pecan.redirect(url)
 
     @pecan.expose()
     def signin(self):
@@ -167,9 +175,15 @@ class AuthController(rest.RestController):
 
         pecan.redirect(CONF.ui_url)
 
-    @pecan.expose()
+    @pecan.expose('json')
     def signout(self):
         """Handle signout request."""
         if api_utils.is_authenticated():
             api_utils.delete_params_from_user_session([const.USER_OPENID])
-        pecan.redirect(CONF.ui_url)
+
+        params = {
+            'openid_logout': CONF.osid.openid_logout_endpoint
+        }
+        url = parse.urljoin(CONF.ui_url,
+                            '/#/logout?' + parse.urlencode(params))
+        pecan.redirect(url)

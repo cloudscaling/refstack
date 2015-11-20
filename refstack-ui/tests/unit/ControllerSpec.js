@@ -42,6 +42,22 @@ describe('Refstack controllers', function () {
             });
     });
 
+    describe('LogoutController', function () {
+        var $location, ctrl;
+
+        beforeEach(inject(function ($controller, _$location_) {
+            $location = _$location_;
+            $location.url('/logout?openid_logout=some_url');
+            ctrl = $controller('LogoutController', {});
+        }));
+
+        it('should set the openID logout URL based on query string',
+            function () {
+                expect($location.url()).toBe('/logout?openid_logout=some_url');
+                expect(ctrl.openid_logout_url).toBe('some_url');
+            });
+    });
+
     describe('CapabilitiesController', function () {
         var ctrl;
 
@@ -62,6 +78,7 @@ describe('Refstack controllers', function () {
             function () {
                 var fakeCaps = {
                     'schema': '1.3',
+                    'status': 'approved',
                     'platform': {'required': ['compute']},
                     'components': {
                         'compute': {
@@ -83,9 +100,8 @@ describe('Refstack controllers', function () {
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
                 expect(ctrl.capabilities).toEqual(fakeCaps);
-                var expectedTemplate = 'components/capabilities/partials/' +
-                                       'capabilityDetailsV1.3.html';
-                expect(ctrl.detailsTemplate).toEqual(expectedTemplate);
+                // The guideline status should be approved.
+                expect(ctrl.capabilities.status).toEqual('approved');
                 var expectedTargetCaps = {
                     'cap_id_1': 'required',
                     'cap_id_2': 'advisory',
@@ -204,6 +220,7 @@ describe('Refstack controllers', function () {
         var fakeCapabilityResponse = {
             'platform': {'required': ['compute']},
             'schema': '1.2',
+            'status': 'approved',
             'components': {
                 'compute': {
                     'required': ['cap_id_1'],
@@ -243,6 +260,8 @@ describe('Refstack controllers', function () {
                 expect(ctrl.versionList).toEqual(['2015.04.json',
                                                    '2015.03.json']);
                 expect(ctrl.capabilityData).toEqual(fakeCapabilityResponse);
+                // The guideline status should be approved.
+                expect(ctrl.capabilityData.status).toEqual('approved');
                 expect(ctrl.schemaVersion).toEqual('1.2');
             });
 
@@ -307,12 +326,15 @@ describe('Refstack controllers', function () {
             });
 
         it('should be able to sort the results into a capability object for ' +
-            'schema version 1.3',
+            'schema version 1.3 and above',
             function () {
-                ctrl.resultsData = fakeResultResponse;
+                ctrl.resultsData = {'results': ['test_id_1',
+                                                'old_test_id_3',
+                                                'test_id_4']
+                                   };
                 ctrl.capabilityData = {
                     'platform': {'required': ['compute']},
-                    'schema': '1.3',
+                    'schema': '1.4',
                     'components': {
                         'compute': {
                             'required': ['cap_id_1'],
@@ -334,23 +356,32 @@ describe('Refstack controllers', function () {
                                 },
                                 'test_id_2': {
                                     'idempotent_id': 'id-5678'
+                                },
+                                'test_id_3': {
+                                    'idempotent_id': 'id-5679',
+                                    'aliases': ['old_test_id_3']
+                                },
+                                'test_id_4': {
+                                    'idempotent_id': 'id-5680'
                                 }
                             }
                         }
                     }
                 };
-                ctrl.schemaVersion = '1.3';
+                ctrl.schemaVersion = '1.4';
                 ctrl.buildCapabilitiesObject();
                 var expectedCapsObject = {
                     'required': {
                         'caps': [{
                             'id': 'cap_id_1',
-                            'passedTests': ['test_id_1'],
+                            'passedTests': ['test_id_1',
+                                            'test_id_3',
+                                            'test_id_4'],
                             'notPassedTests': ['test_id_2'],
                             'passedFlagged': ['test_id_1'],
                             'notPassedFlagged': []
                         }],
-                        'count': 2, 'passedCount': 1,
+                        'count': 4, 'passedCount': 3,
                         'flagFailCount': 0, 'flagPassCount': 1
                     },
                     'advisory': {'caps': [], 'count': 0, 'passedCount': 0,
@@ -361,8 +392,8 @@ describe('Refstack controllers', function () {
                                 'flagFailCount': 0, 'flagPassCount': 0}
                 };
                 expect(ctrl.caps).toEqual(expectedCapsObject);
-                expect(ctrl.requiredPassPercent).toEqual(50);
-                expect(ctrl.nonFlagPassCount).toEqual(0);
+                expect(ctrl.requiredPassPercent).toEqual(75);
+                expect(ctrl.nonFlagPassCount).toEqual(2);
             });
 
         it('should have a method to determine if a test is flagged',
@@ -600,6 +631,23 @@ describe('Refstack controllers', function () {
             function () {
                 ctrl.close();
                 expect(modalInstance.close).toHaveBeenCalledWith();
+            });
+    });
+
+    describe('AuthFailureController', function() {
+        var $location, ctrl;
+
+        beforeEach(inject(function ($controller, _$location_) {
+            $location = _$location_;
+            $location.url('/auth_failure?message=some_error_message');
+            ctrl = $controller('AuthFailureController', {});
+        }));
+
+        it('should set the authentication failure url based on error message',
+            function () {
+                expect($location.url()).toBe('/auth_failure?message=' +
+                'some_error_message');
+                expect(ctrl.message).toBe('some_error_message');
             });
     });
 });

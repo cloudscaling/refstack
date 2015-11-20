@@ -90,9 +90,14 @@
                 controller: 'LeaderBoardController as ctrl'
             }).
             state('authFailure', {
-                url: '/auth_failure/:message',
+                url: '/auth_failure',
                 templateUrl: '/components/home/home.html',
                 controller: 'AuthFailureController as ctrl'
+            }).
+            state('logout', {
+                url: '/logout',
+                templateUrl: '/components/logout/logout.html',
+                controller: 'LogoutController as ctrl'
             });
     }
 
@@ -127,10 +132,6 @@
      * functions.
      */
     function setup($http, $rootScope, $window, $state, refstackApiUrl) {
-
-        /**
-         * This function injects sign in function in all scopes
-         */
 
         $rootScope.auth = {};
         $rootScope.auth.doSignIn = doSignIn;

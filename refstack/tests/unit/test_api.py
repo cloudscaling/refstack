@@ -413,6 +413,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.CONF = self.useFixture(self.config_fixture).conf
         self.CONF.set_override('app_dev_mode', True, 'api')
         self.CONF.set_override('ui_url', 'http://127.0.0.1')
+        self.CONF.set_override('openid_logout_endpoint', 'http://some-url',
+                               'osid')
 
     @mock.patch('refstack.api.utils.get_user_session')
     @mock.patch('pecan.redirect', side_effect=webob.exc.HTTPRedirection)
@@ -452,7 +454,7 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/foo is not bar!!!')
+            'http://127.0.0.1/#/auth_failure?message=foo+is+not+bar%21%21%21')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -466,7 +468,7 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/Authentication canceled.')
+            'http://127.0.0.1/#/auth_failure?message=Authentication+canceled.')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -478,8 +480,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/'
-            'Authentication failed. Please try again.')
+            'http://127.0.0.1/#/auth_failure'
+            '?message=Authentication+failed.+Please+try+again.')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -492,8 +494,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
         self.assertRaises(webob.exc.HTTPRedirection,
                           self.controller.signin_return)
         mock_redirect.assert_called_once_with(
-            'http://127.0.0.1/#/auth_failure/'
-            'Authentication failed. Please try again.')
+            'http://127.0.0.1/#/auth_failure'
+            '?message=Authentication+failed.+Please+try+again.')
         self.assertNotIn(const.CSRF_TOKEN,
                          self.mock_request.environ['beaker.session'])
 
@@ -527,7 +529,8 @@ class AuthControllerTestCase(BaseControllerTestCase):
             const.CSRF_TOKEN: 42
         }
         self.assertRaises(webob.exc.HTTPRedirection, self.controller.signout)
-        mock_redirect.assert_called_with('http://127.0.0.1')
+        mock_redirect.assert_called_with('http://127.0.0.1/#/logout?'
+                                         'openid_logout=http%3A%2F%2Fsome-url')
         self.assertNotIn(const.CSRF_TOKEN,
                          mock_request.environ['beaker.session'])
 
