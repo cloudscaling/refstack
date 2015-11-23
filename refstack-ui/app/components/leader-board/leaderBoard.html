@@ -4,20 +4,17 @@
 <div class="container-fluid">
     <hr>
     <div class="row">
-        <div class="col-md-3">
-            <strong>Capabilities Version:</strong>
-            <select ng-model="ctrl.version" ng-change="ctrl.update()" class="form-control">
-                <!-- Slicing the version file name here gets rid of the '.json' file extension -->
-                <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
-            </select>
-        </div>
         <div class="col-md-4">
             <strong>Target Program:</strong>
-            <select ng-model="ctrl.target" class="form-control" ng-change="ctrl.update()">
-                <option value="platform">OpenStack Powered Platform</option>
-                <option value="compute">OpenStack Powered Compute</option>
-                <option value="object">OpenStack Powered Object Storage</option>
-                <option value="aws">Amazon EC2</option>
+            <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+            <select ng-model="ctrl.targetProgram" ng-change="ctrl.updateVersions()" class="form-control">
+                <option ng-repeat="targetProgram in ctrl.targetPrograms" value="{{targetProgram.targetProgram}}">{{targetProgram.description}}</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <strong>Version:</strong>
+            <select ng-model="ctrl.version" ng-change="ctrl.update()" class="form-control">
+                <option ng-repeat="version in ctrl.versions" value="{{version}}">{{version}}</option>
             </select>
         </div>
     </div>
@@ -47,6 +44,7 @@
 </div>
 
 
+<div cg-busy="{promise:ctrl.capsRequest,message:'Loading'}"></div>
 <div cg-busy="{promise:ctrl.authRequest,message:'Loading'}"></div>
 <div cg-busy="{promise:ctrl.cloudsRequest,message:'Loading'}"></div>
 <div cg-busy="{promise:ctrl.versionsRequest,message:'Loading'}"></div>

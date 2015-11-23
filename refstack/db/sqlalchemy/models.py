@@ -170,7 +170,7 @@ class Cloud(BASE, RefStackBase):  # pragma: no cover
     id = sa.Column(sa.String(36), primary_key=True,
                    default=lambda: six.text_type(uuid.uuid4()))
     openid = sa.Column(sa.String(128), sa.ForeignKey('user.openid'),
-                       nullable=False, unique=True, index=True)
+                       nullable=False, index=True)
     name = sa.Column(sa.String(80), nullable=False)
     description = sa.Column(sa.Text())
     config = sa.Column(sa.Text(), nullable=False)
@@ -180,3 +180,22 @@ class Cloud(BASE, RefStackBase):  # pragma: no cover
     def default_allowed_keys(self):
         """Default keys."""
         return 'id', 'openid', 'name', 'description', 'shared'
+
+
+class Schema(BASE, RefStackBase):  # pragma: no cover
+
+    """URL for schema."""
+
+    __tablename__ = 'schemas'
+
+    id = sa.Column(sa.String(36), primary_key=True,
+                   default=lambda: six.text_type(uuid.uuid4()))
+    openid = sa.Column(sa.String(128), sa.ForeignKey('user.openid'))
+    description = sa.Column(sa.Text())
+    url = sa.Column(sa.Text(), nullable=False)
+    cached_data = sa.Column(sa.Text())
+
+    @property
+    def default_allowed_keys(self):
+        """Default keys."""
+        return 'id', 'openid', 'description', 'url', 'cached_data'

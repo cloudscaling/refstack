@@ -34,7 +34,6 @@
 
         var ctrl = this;
 
-        ctrl.getVersionList = getVersionList;
         ctrl.getResults = getResults;
         ctrl.isEditingAllowed = isEditingAllowed;
         ctrl.isShared = isShared;
@@ -58,17 +57,6 @@
         /** The testID extracted from the URL route. */
         ctrl.testId = $stateParams.testID;
 
-        /** The target OpenStack marketing program to compare against. */
-        ctrl.target = 'platform';
-
-        /** Mappings of DefCore components to marketing program names. */
-        ctrl.targetMappings = {
-            'platform': 'Openstack Powered Platform',
-            'compute': 'OpenStack Powered Compute',
-            'object': 'OpenStack Powered Object Storage',
-            'aws': 'Amazon EC2'
-        };
-
         /** The schema version of the currently selected capabilities data. */
         ctrl.schemaVersion = null;
 
@@ -79,27 +67,46 @@
         ctrl.detailsTemplate = 'components/results-report/partials/' +
                                'reportDetails.html';
 
-        /**
-         * Retrieve an array of available capability files from the Refstack
-         * API server, sort this array reverse-alphabetically, and store it in
-         * a scoped variable. The scope's selected version is initialized to
-         * the latest (i.e. first) version here as well. After a successful API
-         * call, the function to update the capabilities is called.
-         * Sample API return array: ["2015.03.json", "2015.04.json"]
-         */
-        function getVersionList() {
+
+        /** The target OpenStack marketing program to show capabilities for. */
+        /** TODO: commonize it with other instances of this method */
+        ctrl.getCapabilities = getCapabilities; 
+        ctrl.updateVersions = updateVersions;
+        ctrl.targetPrograms = null;
+        ctrl.versions = null;
+        ctrl.targetProgram = null;
+        ctrl.version = null;
+        ctrl.capabilities = null;
+
+        function getCapabilities() {
             var content_url = refstackApiUrl + '/capabilities';
-            ctrl.versionsRequest =
-                $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
-                    ctrl.version = ctrl.versionList[0];
-                    ctrl.updateCapabilities();
-                }).error(function (error) {
-                    ctrl.showError = true;
-                    ctrl.error = 'Error retrieving version list: ' +
-                        angular.toJson(error);
-                });
+            ctrl.capsRequest = $http.get(content_url).success(function (data) {
+                ctrl.targetPrograms = data;
+                ctrl.targetProgram = ctrl.targetPrograms[0].targetProgram;
+                ctrl.updateVersions();
+            }).error(function (error) {
+                ctrl.showError = true;
+                ctrl.error = 'Error retrieving version list: ' +
+                    angular.toJson(error);
+            });
         }
+        ctrl.getCapabilities();
+
+        function updateVersions() {
+            ctrl.capabilities = null;
+            if (ctrl.targetPrograms == null) {
+                return;
+            }
+            ctrl.targetPrograms.forEach(function (item) {
+                if (item.targetProgram == ctrl.targetProgram) {
+                    ctrl.versions = item.versions.sort().reverse();
+                    ctrl.version = ctrl.versions[0];
+                    ctrl.targetProgramDescription = item.description;
+                    ctrl.updateCapabilities();
+                }
+            });
+        }
+
 
         /**
          * Retrieve results from the Refstack API server based on the test
@@ -112,7 +119,7 @@
             ctrl.resultsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.resultsData = data;
-                    getVersionList();
+                    ctrl.getCapabilities();
                 }).error(function (error) {
                     ctrl.showError = true;
                     ctrl.resultsData = null;
@@ -202,8 +209,8 @@
         function updateCapabilities() {
             ctrl.capabilityData = null;
             ctrl.showError = false;
-            var content_url = refstackApiUrl + '/capabilities/' +
-                ctrl.version;
+            var content_url = refstackApiUrl + '/capabilities/'
+                              + ctrl.targetProgram + '/' + ctrl.version;
             ctrl.capsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.capabilityData = data;
@@ -229,7 +236,7 @@
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
             // components.
-            if (ctrl.target === 'platform') {
+            if (ctrl.targetProgram === 'platform') {
                 var platform_components =
                     ctrl.capabilityData.platform.required;
 
@@ -267,7 +274,7 @@
                 });
             }
             else {
-                angular.forEach(components[ctrl.target],
+                angular.forEach(components[ctrl.targetProgram],
                     function (caps, status) {
                         angular.forEach(caps, function(cap) {
                             targetCaps[cap] = status;

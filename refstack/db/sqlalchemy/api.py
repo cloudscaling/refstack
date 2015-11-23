@@ -427,3 +427,22 @@ def get_cloud_last_results(cloud_id):
                       .filter_by(test_id=test_id)
                       .all())
     return {'tests': _to_dict(results), 'date': last_result[0]}
+
+
+def get_schemas():
+    session = get_session()
+    schemas = session.query(models.Schema).all()
+    return _to_dict(schemas)
+
+
+def update_schema(schema):
+    """Update schema DB record if it exists."""
+    session = get_session()
+    id_ = schema['id']
+    schema_db = session.query(models.Schema).filter_by(id=id_).first()
+    if schema_db is None:
+        raise NotFound('Schema with id %s not found' % id_)
+
+    with session.begin():
+        schema_db.update(schema)
+        schema_db.save(session=session)

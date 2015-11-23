@@ -27,7 +27,6 @@
 
         var ctrl = this;
 
-        ctrl.getVersionList = getVersionList;
         ctrl.getCloudDetail = getCloudDetail;
         ctrl.updateConfig = updateConfig;
         ctrl.run = run;
@@ -42,24 +41,46 @@
         ctrl.config = '';
         ctrl.isConfigLoaded = '[No data]';
 
-        /** The target OpenStack marketing program to show capabilities for. */
-        ctrl.target = 'platform';
-        /** The schema version of the currently selected capabilities data. */
-        ctrl.version = null;
         /** Additional config lines. For example with passwords that is not stored on server. */
         ctrl.add_config = '';
 
+
+        /** The target OpenStack marketing program to show capabilities for. */
         /** TODO: commonize it with other instances of this method */
-        function getVersionList() {
+        ctrl.getCapabilities = getCapabilities; 
+        ctrl.updateVersions = updateVersions;
+        ctrl.targetPrograms = null;
+        ctrl.versions = null;
+        ctrl.targetProgram = null;
+        ctrl.version = null;
+
+        function getCapabilities() {
             var content_url = refstackApiUrl + '/capabilities';
-            ctrl.versionsRequest = $http.get(content_url).success(function(data) {
-                ctrl.versionList = data.sort().reverse();
-                ctrl.version = ctrl.versionList[0];
-            }).error(function(error) {
+            ctrl.capsRequest = $http.get(content_url).success(function (data) {
+                ctrl.targetPrograms = data;
+                ctrl.targetProgram = ctrl.targetPrograms[0].targetProgram;
+                ctrl.updateVersions();
+            }).error(function (error) {
                 ctrl.showError = true;
-                ctrl.error = 'Error retrieving version list: ' + JSON.stringify(error);
+                ctrl.error = 'Error retrieving version list: ' +
+                    angular.toJson(error);
             });
-        };
+        }
+        ctrl.getCapabilities();
+
+        function updateVersions() {
+            ctrl.capabilities = null;
+            if (ctrl.targetPrograms == null) {
+                return;
+            }
+            ctrl.targetPrograms.forEach(function (item) {
+                if (item.targetProgram == ctrl.targetProgram) {
+                    ctrl.versions = item.versions.sort().reverse();
+                    ctrl.version = ctrl.versions[0];
+                }
+            });
+        }
+
 
         /**
          * This will contact the Refstack API to get a listing of test run
@@ -71,7 +92,6 @@
             var content_url = refstackApiUrl + '/clouds/' + ctrl.cloud_id;
             ctrl.cloudRequest = $http.get(content_url).success(function(data) {
                 ctrl.cloudDetail = data;
-                ctrl.getVersionList();
             }).error(function(error) {
                 ctrl.showError = true;
                 ctrl.resultsData = null;
@@ -126,7 +146,7 @@
             brun.css('display', 'none');
             var url = [refstackApiUrl, '/clouds/run', '?cloud_id=' + ctrl.cloud_id].join('');
             var params = {'version': ctrl.version,
-                          'target': ctrl.target,
+                          'target': ctrl.targetProgram,
                           'config': ctrl.add_config};
             $http.post(url, params).success(function() {
                 raiseAlert('success', '', 'Tests were run!');

@@ -29,14 +29,10 @@
     function CapabilitiesController($http, refstackApiUrl) {
         var ctrl = this;
 
-        ctrl.getVersionList = getVersionList;
-        ctrl.update = update;
-        ctrl.updateTargetCapabilities = updateTargetCapabilities;
         ctrl.filterStatus = filterStatus;
         ctrl.getObjectLength = getObjectLength;
-
-        /** The target OpenStack marketing program to show capabilities for. */
-        ctrl.target = 'platform';
+        ctrl.updateCapabilities = updateCapabilities;
+        ctrl.updateTargetCapabilities = updateTargetCapabilities;
 
         /** The various possible capability statuses. */
         ctrl.status = {
@@ -52,42 +48,56 @@
         ctrl.detailsTemplate = 'components/capabilities/partials/' +
                                'capabilityDetails.html';
 
-        /**
-         * Retrieve an array of available capability files from the Refstack
-         * API server, sort this array reverse-alphabetically, and store it in
-         * a scoped variable. The scope's selected version is initialized to
-         * the latest (i.e. first) version here as well. After a successful API
-         * call, the function to update the capabilities is called.
-         * Sample API return array: ["2015.03.json", "2015.04.json"]
-         */
-        function getVersionList() {
+
+        /** The target OpenStack marketing program to show capabilities for. */
+        /** TODO: commonize it with other instances of this method */
+        ctrl.getCapabilities = getCapabilities; 
+        ctrl.updateVersions = updateVersions;
+        ctrl.targetPrograms = null;
+        ctrl.versions = null;
+        ctrl.targetProgram = null;
+        ctrl.version = null;
+        ctrl.capabilities = null;
+
+        function getCapabilities() {
             var content_url = refstackApiUrl + '/capabilities';
-            ctrl.versionsRequest =
-                $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
-                    ctrl.version = ctrl.versionList[0];
-                    ctrl.update();
-                }).error(function (error) {
-                    ctrl.showError = true;
-                    ctrl.error = 'Error retrieving version list: ' +
-                        angular.toJson(error);
-                });
+            ctrl.capsRequest = $http.get(content_url).success(function (data) {
+                ctrl.targetPrograms = data;
+                ctrl.targetProgram = ctrl.targetPrograms[0].targetProgram;
+                ctrl.updateVersions();
+            }).error(function (error) {
+                ctrl.showError = true;
+                ctrl.error = 'Error retrieving version list: ' +
+                    angular.toJson(error);
+            });
+        }
+        ctrl.getCapabilities();
+
+        function updateVersions() {
+            ctrl.capabilities = null;
+            if (ctrl.targetPrograms == null) {
+                return;
+            }
+            ctrl.targetPrograms.forEach(function (item) {
+                if (item.targetProgram == ctrl.targetProgram) {
+                    ctrl.versions = item.versions.sort().reverse();
+                    ctrl.version = ctrl.versions[0];
+                    ctrl.updateCapabilities();
+                }
+            });
         }
 
-        /**
-         * This will contact the Refstack API server to retrieve the JSON
-         * content of the capability file corresponding to the selected
-         * version.
-         */
-        function update() {
-            var content_url = refstackApiUrl + '/capabilities/' + ctrl.version;
+
+        function updateCapabilities() {
+            var content_url = refstackApiUrl + '/capabilities/'
+                              + ctrl.targetProgram + '/' + ctrl.version;
             ctrl.capsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.capabilities = data;
                     ctrl.updateTargetCapabilities();
                 }).error(function (error) {
                     ctrl.showError = true;
-                    ctrl.capabilities = null;
+                    ctrl.targetCapabilities = null;
                     ctrl.error = 'Error retrieving capabilities: ' +
                         angular.toJson(error);
                 });
@@ -107,7 +117,7 @@
             // The 'platform' target is comprised of multiple components, so
             // we need to get the capabilities belonging to each of its
             // components.
-            if (ctrl.target === 'platform') {
+            if (ctrl.targetProgram === 'platform') {
                 var platform_components = ctrl.capabilities.platform.required;
 
                 // This will contain status priority values, where lower
@@ -144,7 +154,7 @@
                 });
             }
             else {
-                angular.forEach(components[ctrl.target],
+                angular.forEach(components[ctrl.targetProgram],
                     function (caps, status) {
                         angular.forEach(caps, function(cap) {
                             targetCaps[cap] = status;
@@ -181,7 +191,5 @@
         function getObjectLength(object) {
             return Object.keys(object).length;
         }
-
-        ctrl.getVersionList();
     }
 })();

@@ -36,20 +36,16 @@
 
     <!-- User Options -->
     <div class="row">
-        <div class="col-md-3">
-            <strong>Capabilities Version:</strong>
-            <select ng-model="ctrl.version" ng-change="ctrl.updateCapabilities()" class="form-control">
-                <!-- Slicing the version file name here gets rid of the '.json' file extension -->
-                <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
-            </select>
-        </div>
         <div class="col-md-4">
             <strong>Target Program:</strong>
-            <select ng-model="ctrl.target" class="form-control" ng-change="ctrl.buildCapabilitiesObject()">
-                <option value="platform">OpenStack Powered Platform</option>
-                <option value="compute">OpenStack Powered Compute</option>
-                <option value="object">OpenStack Powered Object Storage</option>
-                <option value="aws">Amazon EC2</option>
+            <select ng-model="ctrl.targetProgram" ng-change="ctrl.updateVersions()" class="form-control">
+                <option ng-repeat="targetProgram in ctrl.targetPrograms" value="{{targetProgram.targetProgram}}">{{targetProgram.description}}</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <strong>Version:</strong>
+            <select ng-model="ctrl.version" ng-change="ctrl.updateCapabilities()" class="form-control">
+                <option ng-repeat="version in ctrl.versions" value="{{version}}">{{version}}</option>
             </select>
         </div>
     </div>
@@ -73,15 +69,15 @@
         <strong>Status:</strong>
         <p>This cloud passes <strong>{{ctrl.requiredPassPercent | number:1}}% </strong>
            ({{ctrl.caps.required.passedCount}}/{{ctrl.caps.required.count}})
-           of the tests in the <strong>{{ctrl.version.slice(0, -5)}}</strong> <em>required</em> capabilities for the
-           <strong>{{ctrl.targetMappings[target]}}</strong> program. <br />
+           of the tests in the <strong>{{ctrl.version}}</strong> <em>required</em> capabilities for the
+           <strong>{{ctrl.targetProgramDescription}}</strong> program. <br />
            Excluding flagged tests, this cloud passes
            <strong>{{ctrl.nonFlagRequiredPassPercent | number:1}}%</strong>
            ({{ctrl.nonFlagPassCount}}/{{ctrl.totalNonFlagCount}})
            of the <em>required</em> tests.
         </p>
 
-        <p>Compliance with <strong>{{ctrl.version.slice(0, -5)}}</strong>:
+        <p>Compliance with <strong>{{ctrl.version}}</strong>:
             <strong>
                 <span ng-if="ctrl.nonFlagPassCount === ctrl.totalNonFlagCount" class="yes">YES</span>
                 <span ng-if="ctrl.nonFlagPassCount !== ctrl.totalNonFlagCount" class="no">NO</span>
@@ -138,7 +134,6 @@
 </div>
 
 <div class="loading">
-    <div cg-busy="{promise:versionsRequest,message:'Loading versions'}"></div>
     <div cg-busy="{promise:capsRequest,message:'Loading capabilities'}"></div>
     <div cg-busy="{promise:resultsRequest,message:'Loading results'}"></div>
 </div>

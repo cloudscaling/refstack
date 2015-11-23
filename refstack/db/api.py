@@ -196,3 +196,11 @@ def get_shared_clouds():
 
 def get_cloud_last_results(cloud_id):
     return IMPL.get_cloud_last_results(cloud_id)
+
+
+def get_schemas():
+    return IMPL.get_schemas()
+
+
+def update_schema(schema):
+    return IMPL.update_schema(schema)

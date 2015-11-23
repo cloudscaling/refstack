@@ -48,20 +48,17 @@
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary" ng-click="ctrl.run({cloud_id: cloud_id})">Run with:</button>
             </div>
-            <div class="col-md-3">
-                <strong>Version:</strong>
-                <select ng-model="ctrl.version" class="form-control">
-                    <!-- Slicing the version file name here gets rid of the '.json' file extension. -->
-                    <option ng-repeat="versionFile in ctrl.versionList" value="{{versionFile}}">{{versionFile.slice(0, -5)}}</option>
+            <div class="col-md-4">
+                <strong>Target Program:</strong>
+                <span class="program-about"><a target="_blank" href="http://www.openstack.org/brand/interop/">About</a></span>
+                <select ng-model="ctrl.targetProgram" ng-change="ctrl.updateVersions()" class="form-control">
+                    <option ng-repeat="targetProgram in ctrl.targetPrograms" value="{{targetProgram.targetProgram}}">{{targetProgram.description}}</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <strong>Target Program:</strong>
-                <select ng-model="ctrl.target" class="form-control" ng-change="updateTargetCapabilities()">
-                    <option value="platform">OpenStack Powered Platform</option>
-                    <option value="compute">OpenStack Powered Compute</option>
-                    <option value="object">OpenStack Powered Object Storage</option>
-                    <option value="aws">Amazon EC2</option>
+                <strong>Version:</strong>
+                <select ng-model="ctrl.version" ng-change="ctrl.updateCapabilities()" class="form-control">
+                    <option ng-repeat="version in ctrl.versions" value="{{version}}">{{version}}</option>
                 </select>
             </div>
         </div>
@@ -82,6 +79,8 @@
     </div>
 </div>
 
+<!-- Loading animation divs -->
+<div cg-busy="{promise:ctrl.capsRequest,message:'Loading capabilities'}"></div>
 
 <div ng-show="ctrl.showError" class="alert alert-danger" role="alert">
     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>

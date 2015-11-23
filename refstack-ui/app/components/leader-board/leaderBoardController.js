@@ -32,7 +32,6 @@
 
         var ctrl = this;
 
-        ctrl.getVersionList = getVersionList;
         ctrl.update = update;
         ctrl.coefToStyle = coefToStyle;
 
@@ -40,26 +39,45 @@
         ctrl.itemsPerPage = 20;
         ctrl.maxSize = 5;
 
-        /** The target OpenStack marketing program to show capabilities for. */
-        ctrl.target = 'platform';
-        /** The schema version of the currently selected capabilities data. */
-        ctrl.version = null;
 
+        /** The target OpenStack marketing program to show capabilities for. */
         /** TODO: commonize it with other instances of this method */
-        function getVersionList() {
+        ctrl.getCapabilities = getCapabilities; 
+        ctrl.updateVersions = updateVersions;
+        ctrl.targetPrograms = null;
+        ctrl.versions = null;
+        ctrl.targetProgram = null;
+        ctrl.version = null;
+        ctrl.capabilities = null;
+
+        function getCapabilities() {
             var content_url = refstackApiUrl + '/capabilities';
-            ctrl.versionsRequest =
-                $http.get(content_url).success(function (data) {
-                    ctrl.versionList = data.sort().reverse();
-                    ctrl.version = ctrl.versionList[0];
-                    ctrl.update();
-                }).error(function (error) {
-                    ctrl.showError = true;
-                    ctrl.error = 'Error retrieving version list: ' +
-                        JSON.stringify(error);
-                });
+            ctrl.capsRequest = $http.get(content_url).success(function (data) {
+                ctrl.targetPrograms = data;
+                ctrl.targetProgram = ctrl.targetPrograms[0].targetProgram;
+                ctrl.updateVersions();
+            }).error(function (error) {
+                ctrl.showError = true;
+                ctrl.error = 'Error retrieving version list: ' +
+                    angular.toJson(error);
+            });
         }
-        ctrl.getVersionList();
+        ctrl.getCapabilities();
+
+        function updateVersions() {
+            ctrl.capabilities = null;
+            if (ctrl.targetPrograms == null) {
+                return;
+            }
+            ctrl.targetPrograms.forEach(function (item) {
+                if (item.targetProgram == ctrl.targetProgram) {
+                    ctrl.versions = item.versions.sort().reverse();
+                    ctrl.version = ctrl.versions[0];
+                    ctrl.update();
+                }
+            });
+        }
+
 
          /**
           * This will contact the Refstack API to get a listing of test run
@@ -71,7 +89,7 @@
             var content_url = refstackApiUrl + '/leaderBoard'
                               + '?page=' + ctrl.currentPage
                               + '&version=' + ctrl.version
-                              + '&target=' + ctrl.target;
+                              + '&target=' + ctrl.targetProgram;
             ctrl.cloudsRequest =
                 $http.get(content_url).success(function (data) {
                     ctrl.data = data;

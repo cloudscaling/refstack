@@ -19,19 +19,11 @@ from oslo_config import cfg
 from oslo_log import log
 import pecan
 from pecan import rest
-import re
-import requests
-import requests_cache
 
 from refstack.api.controllers import caps_utils
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
-
-# Cached requests will expire after 10 minutes.
-requests_cache.install_cache(cache_name='github_cache',
-                             backend='memory',
-                             expire_after=600)
 
 
 class CapabilitiesController(rest.RestController):
@@ -44,29 +36,9 @@ class CapabilitiesController(rest.RestController):
     @pecan.expose('json')
     def get(self):
         """Get a list of all available capabilities."""
-        try:
-            response = requests.get(CONF.api.github_api_capabilities_url)
-            LOG.debug("Response Status: %s / Used Requests Cache: %s" %
-                      (response.status_code,
-                       getattr(response, 'from_cache', False)))
-            if response.status_code == 200:
-                regex = re.compile('^[0-9]{4}\.[0-9]{2}\.json$')
-                capability_files = []
-                for rfile in response.json():
-                    if rfile["type"] == "file" and regex.search(rfile["name"]):
-                        capability_files.append(rfile["name"])
-                return capability_files
-            else:
-                LOG.warning('Github returned non-success HTTP '
-                            'code: %s' % response.status_code)
-                pecan.abort(response.status_code)
-
-        except requests.exceptions.RequestException as e:
-            LOG.warning('An error occurred trying to get GitHub '
-                        'repository contents: %s' % e)
-            pecan.abort(500)
+        return caps_utils.get_target_programs()
 
     @pecan.expose('json')
-    def get_one(self, file_name):
+    def get_one(self, target_program, version):
         """Handler for getting contents of specific capability file."""
-        return caps_utils.get_capability(file_name + '.json')
+        return caps_utils.get_capability(target_program, version)

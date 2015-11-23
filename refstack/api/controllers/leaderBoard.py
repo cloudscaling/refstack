@@ -1,6 +1,3 @@
-# Copyright (c) 2015 Mirantis, Inc.
-# All Rights Reserved.
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -45,8 +42,8 @@ class LeaderBoardController(rest.RestController):
             raise api_exc.ValidationError(
                 'Target parameters can not be null.')
 
-        ref_tests = caps_utils.get_capability_tests(params['version'],
-                                                    params['target'])
+        ref_tests = caps_utils.get_capability_tests(params['target'],
+                                                    params['version'])
         ref_tests_count = len(ref_tests)
         LOG.debug("All tests count: %s" % float(len(ref_tests)))
         clouds = db.get_shared_clouds()
