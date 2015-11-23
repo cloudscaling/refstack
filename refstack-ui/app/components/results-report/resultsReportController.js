@@ -399,6 +399,7 @@
                     break;
                 case '1.3':
                 case '1.4':
+                case '1.5':
                     capMethod = 'buildCapabilityV1_3';
                     break;
                 default:
