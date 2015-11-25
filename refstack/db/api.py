@@ -204,3 +204,18 @@ def get_schemas():
 
 def update_schema(schema):
     return IMPL.update_schema(schema)
+
+
+def store_schema(schema_info):
+    """Store schema in to DB."""
+    return IMPL.store_schema(schema_info)
+
+
+def delete_schema(schema_id):
+    """Delete schema from DB."""
+    return IMPL.delete_schema(schema_id)
+
+
+def get_schema(schema_id):
+    """Get schema by id."""
+    return IMPL.get_schema(schema_id)

@@ -339,13 +339,7 @@ def store_cloud(cloud_info):
     cloud.shared = False
     session = get_session()
     with session.begin():
-        clouds_collision = (session.
-                            query(models.Cloud).
-                            filter_by(name=cloud.name).all())
-        if not clouds_collision:
-            cloud.save(session)
-        else:
-            raise Duplication('Public key already exists.')
+        cloud.save(session)
     return cloud.id
 
 
@@ -446,3 +440,38 @@ def update_schema(schema):
     with session.begin():
         schema_db.update(schema)
         schema_db.save(session=session)
+
+
+def get_schema(schema_id):
+    """Get schema by id."""
+    session = get_session()
+    schema = session.query(models.Schema).filter_by(id=schema_id).first()
+    if schema is None:
+        return None
+    return _to_dict(schema, ('id', 'openid', 'description', 'url'))
+
+
+def delete_schema(id):
+    """Delete schema from DB."""
+    session = get_session()
+    with session.begin():
+        schema = session.query(models.Schema).filter_by(id=id).first()
+        session.delete(schema)
+
+
+def store_schema(schema_info):
+    """Store key in to DB."""
+    schema = models.Schema()
+    schema.openid = schema_info['openid']
+    schema.description = schema_info.get('description')
+    schema.url = schema_info['url']
+    session = get_session()
+    with session.begin():
+        schemas_collision = (session.
+                             query(models.Schema).
+                             filter_by(url=schema.url).all())
+        if not schemas_collision:
+            schema.save(session)
+        else:
+            raise Duplication('Schema with this URL already exists.')
+    return schema.id

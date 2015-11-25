@@ -25,14 +25,13 @@ def load_schema(url):
                    getattr(response, 'from_cache', False)))
         if response.status_code == 200:
             return response.json()
-        else:
-            LOG.warning('Github returned non-success HTTP '
-                        'code: %s' % response.status_code)
-            pecan.abort(response.status_code)
+
+        LOG.warning('Github returned non-success HTTP '
+                    'code: %s for url %s' % (response.status_code, url))
     except requests.exceptions.RequestException as e:
         LOG.warning('An error occurred trying to get GitHub '
-                    'capability file contents: %s' % e)
-        pecan.abort(500)
+                    'capability file (%s) contents: %s' % (url, e))
+    return None
 
 
 def get_capability(target, version):
@@ -40,7 +39,10 @@ def get_capability(target, version):
     for ctarget in target_programs:
         if ctarget['targetProgram'] != target:
             continue
-        return load_schema(ctarget['urls'][version])
+        result = load_schema(ctarget['urls'][version])
+        if not result:
+            pecan.abort(500, 'Schema file could not be loaded')
+        return result
     return None
 
 
@@ -94,6 +96,8 @@ def get_target_programs():
         data = schema['cached_data']
         if not data:
             data = _load_targets_data(schema['url'])
+            if not data:
+                continue
             schema['cached_data'] = json.dumps(data)
             db.update_schema(schema)
         else:
@@ -115,6 +119,8 @@ def get_target_programs():
 
 def _load_targets_data(url):
     schema = load_schema(url)
+    if not schema:
+        return None
     version = schema['schema'].split('.')
     targets = dict()
     if int(version[0]) < 2 and int(version[1]) < 5:

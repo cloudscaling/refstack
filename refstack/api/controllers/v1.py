@@ -20,6 +20,7 @@ from refstack.api.controllers import capabilities
 from refstack.api.controllers import clouds
 from refstack.api.controllers import leaderBoard
 from refstack.api.controllers import results
+from refstack.api.controllers import schemas
 from refstack.api.controllers import user
 
 
@@ -32,3 +33,4 @@ class V1Controller(object):
     auth = auth.AuthController()
     profile = user.ProfileController()
     leaderBoard = leaderBoard.LeaderBoardController()
+    schemas = schemas.SchemasController()

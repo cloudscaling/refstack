@@ -204,3 +204,31 @@ class CloudValidator(BaseValidator):
         config = body['config'].strip()
         if not config:
             raise api_exc.ValidationError('Config should not be empty.')
+
+
+class SchemaValidator(BaseValidator):
+
+    """Validator for adding new schema."""
+
+    schema = {
+        'type': 'object',
+        'properties': {
+            'description': {'type': 'string'},
+            'url': {'type': 'string'}
+        },
+        'required': ['description', 'url'],
+        'additionalProperties': False
+    }
+
+    def validate(self, request):
+        """Validate uploaded test results."""
+        super(SchemaValidator, self).validate(request)
+        body = json.loads(request.body)
+
+        description = body['description'].strip()
+        if not description:
+            raise api_exc.ValidationError('Description should not be empty.')
+
+        url = body['url'].strip()
+        if not url:
+            raise api_exc.ValidationError('URL should not be empty.')

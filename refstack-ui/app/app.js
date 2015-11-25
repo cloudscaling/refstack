@@ -98,6 +98,11 @@
                 url: '/logout',
                 templateUrl: '/components/logout/logout.html',
                 controller: 'LogoutController as ctrl'
+            }).
+            state('schemas', {
+                url: '/schemas',
+                templateUrl: '/components/schemas/schemas.html',
+                controller: 'SchemasController as ctrl'
             });
     }
 
